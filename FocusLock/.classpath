@@ -176,6 +176,6 @@
 	<classpathentry kind="lib" path="C:/Program Files/Micro-Manager-2.0/plugins/Micro-Manager/xml-apis-1.3.04.jar"/>
 	<classpathentry kind="lib" path="C:/Program Files/Micro-Manager-2.0/plugins/Micro-Manager/xmpcore-5.1.2.jar"/>
 	<classpathentry kind="lib" path="C:/Program Files/Micro-Manager-2.0/ij.jar"/>
-	<classpathentry kind="lib" path="C:/Users/Jelle/Documents/TU Delft/gFocus/FocusLock/jfreechart-1.5.3.jar"/>
+	<classpathentry kind="lib" path="C:/Users/Jelle/Documents/TU Delft/gFocus/gFocus/FocusLock/jfreechart-1.5.3.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>
