@@ -31,58 +31,73 @@ public class CameraPollingTask {
 
     public void start() {
         try {
-            // Set your custom camera as active
+            // Warm-up snap (ignore errors)
             core.setCameraDevice(cameraName);
             core.snapImage();
-            core.getImage(); // just discard result
+            core.getImage(); 
         } catch (Exception e) {
             studio.logs().logMessage("First snap failed (warm-up): " + e.getMessage());
         }
 
         scheduler.scheduleAtFixedRate(() -> {
-            try {
-                core.setCameraDevice(cameraName); // Ensure this is done before each snap if needed
-                core.snapImage();
+            final int maxRetries = 5;
+            int attempt = 0;
+            boolean success = false;
 
-                // Safely get image and handle different types
-                Object img = core.getImage();
+            while (attempt < maxRetries && !success) {
+                try {
+                    attempt++;
+                    core.setCameraDevice(cameraName);
+                    core.snapImage();
+                    Object img = core.getImage();
 
-                if (img instanceof byte[]) {
-                    byte[] raw = (byte[]) img;
-                    int numPixels = raw.length / 2;
-                    pixelData = new short[numPixels];
-
-                    for (int i = 0; i < numPixels; i++) {
-                        int low = raw[2 * i] & 0xFF;
-                        int high = raw[2 * i + 1] & 0xFF;
-                        pixelData[i] = (short) ((high << 8) | low); // assumes little-endian
+                    if (img instanceof byte[]) {
+                        byte[] raw = (byte[]) img;
+                        int numPixels = raw.length / 2;
+                        pixelData = new short[numPixels];
+                        for (int i = 0; i < numPixels; i++) {
+                            int low = raw[2 * i] & 0xFF;
+                            int high = raw[2 * i + 1] & 0xFF;
+                            pixelData[i] = (short) ((high << 8) | low);
+                        }
+                    } else if (img instanceof short[]) {
+                        pixelData = (short[]) img;
+                    } else {
+                        studio.logs().showError("Unsupported image type: " + img.getClass().getSimpleName());
+                        return;
                     }
 
-                } else if (img instanceof short[]) {
-                    pixelData = (short[]) img;
+                    // Success: break retry loop
+                    success = true;
 
-                } else {
-                    studio.logs().showError("Unsupported image type: " + img.getClass().getSimpleName());
-                    return;
-                }
+                    // Debug output
+                    System.out.println("Snapshot at " + System.currentTimeMillis());
+                    for (int i = 0; i < Math.min(256, pixelData.length); i++) {
+                        System.out.print(pixelData[i] + " ");
+                    }
+                    System.out.println();
 
-                // Preview output
-                System.out.println("Snapshot at " + System.currentTimeMillis());
-                for (int i = 0; i < Math.min(256, pixelData.length); i++) {
-                    System.out.print(pixelData[i] + " ");
-                }
-                System.out.println();
-                
-                if (onImageUpdate != null) {
-                    onImageUpdate.accept(pixelData);
-                }
+                    if (onImageUpdate != null) {
+                        onImageUpdate.accept(pixelData);
+                    }
 
-            } catch (Exception e) {
-                studio.logs().showError("Failed to acquire image: " + e.getMessage());
-                e.printStackTrace(); // good for debugging
+                } catch (Exception e) {
+                    if (attempt >= maxRetries) {
+                        studio.logs().showError("Failed to acquire image after " + maxRetries + " attempts: " + e.getMessage());
+                        e.printStackTrace();
+                    } else {
+                        try {
+                            Thread.sleep(100); // slight delay before retry
+                        } catch (InterruptedException ie) {
+                            Thread.currentThread().interrupt();
+                            return;
+                        }
+                    }
+                }
             }
         }, 0, 1, TimeUnit.SECONDS);
     }
+
 
     public void stop() {
         scheduler.shutdownNow();
