@@ -2,6 +2,7 @@ package com.myname.focuslock;
 
 import java.awt.EventQueue;
 import java.util.HashMap;
+import java.util.Random;
 import java.util.TreeMap;
 
 import javax.swing.JFrame;
@@ -71,7 +72,16 @@ public class MyFrame extends ConfigurableMainFrame {
 		LockPanel lockPanel = new LockPanel("settings", this.getController());
 		panel.add(lockPanel);
 		
-		GraphPanel graphPanel = new GraphPanel(new int[128]);
+        int length = 128;
+        double amplitude = 1000;
+        double mean = 64;    // center of the array
+        double sigma = 15;
+		
+//        int[] gaussianData = generateGaussianData(length, amplitude, mean, sigma);
+        int[] gaussianData = new int[128];
+
+		
+		GraphPanel graphPanel = new GraphPanel(gaussianData);
 		graphPanel.setBounds(220, 10, 396, 411);
 		lockPanel.add(graphPanel);
 		
@@ -89,5 +99,20 @@ public class MyFrame extends ConfigurableMainFrame {
 		    	graphPanel.repaint();           // force redraw if needed
 		    });
 		});
+	}
+	
+	private static int[] generateGaussianData(int length, double amplitude, double mean, double sigma) {
+	    int[] data = new int[length];
+	    Random rand = new Random();
+
+	    double noiseStdDev = amplitude * 0.05; // Adjust this factor to control noise level
+
+	    for (int i = 0; i < length; i++) {
+	        double x = i;
+	        double value = amplitude * Math.exp(-Math.pow(x - mean, 2) / (2 * sigma * sigma));
+	        double noise = rand.nextGaussian() * noiseStdDev; // Gaussian noise
+	        data[i] = (int) Math.max(0, Math.round(value + noise)); // Clamp to 0 to avoid negatives
+	    }
+	    return data;
 	}
 }
