@@ -85,6 +85,12 @@ public class CalibrateTask {
     }
     
     private void finishCalibration() {
+    	try {
+    		core.setPosition(stage, startZ);
+    	} catch (Exception e) {
+    		studio.logs().showError("Returning to original Z position failed: " + e.getMessage());
+    	}
+    	
         double sumX = 0, sumY = 0, sumXY = 0, sumX2 = 0;
         
         for (int i = 0; i < numSteps; i++) {
