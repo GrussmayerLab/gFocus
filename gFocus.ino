@@ -284,9 +284,13 @@ void sendData(uint16_t* buffer, size_t length) {
   uint8_t crc2 = calculateCRC(response, payloadSize);
 
   SerialUSB.write(START_FLAG);
+  SerialUSB.flush();  // Ensures data is actually transmitted
   SerialUSB.write(response, payloadSize);
+  SerialUSB.flush();  // Ensures data is actually transmitted
   SerialUSB.write(crc2);
+  SerialUSB.flush();  // Ensures data is actually transmitted
   SerialUSB.write(END_FLAG);
+  SerialUSB.flush();  // Ensures data is actually transmitted
 }
 
 void initializeLightSensor() {
