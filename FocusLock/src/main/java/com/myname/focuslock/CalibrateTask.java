@@ -25,10 +25,17 @@ public class CalibrateTask {
     
     private int currentStep = 0;
     private double startZ = 0;
+    private String stage;
     
     public CalibrateTask(Studio studio) {
     	this.studio = studio;
-    	this.core = studio.core();    	
+    	this.core = studio.core();
+    	
+    	try {
+    		this.stage = core.getFocusDevice();
+    	} catch(Exception e) {
+    		studio.logs().showError("Could not find focus stage: " + e.toString());
+    	}
     }
     
     public void setOnCalibrationFinished(BiConsumer<Double, Double> callback) {
@@ -37,7 +44,7 @@ public class CalibrateTask {
     
     public void startCalibration() {
     	try {
-    		startZ = core.getPosition("Z");
+    		startZ = core.getPosition(stage);
     	} catch (Exception e) {
     		studio.logs().showError("Failed to get initial stage position: " + e.getMessage());
     		return;
@@ -54,7 +61,7 @@ public class CalibrateTask {
     	double targetZ = startZ + currentStep * stepSizeUm;
     	
     	try {
-    		core.setPosition("Z", targetZ);
+    		core.setPosition(stage, targetZ);
     		Thread.sleep(1000); // Give hardware a moment to settle
     	} catch (Exception e) {
     		studio.logs().showError("Stage movement failed: " + e.getMessage());
