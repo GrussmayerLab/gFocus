@@ -3,6 +3,7 @@ package com.myname.focuslock;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.function.BiConsumer;
+import com.myname.focuslock.GaussianFitter;
 
 import org.micromanager.Studio;
 
@@ -12,7 +13,6 @@ public class CalibrateTask {
     private Studio studio;
     private CMMCore core;
     
-    private String stageName;
     private final String cameraName = "gFocus Light Sensor";
     private final ScheduledExecutorService scheduler = Executors.newSingleThreadScheduledExecutor();
     private BiConsumer<Double, Double> onCalibrationFinished;
@@ -28,46 +28,16 @@ public class CalibrateTask {
     
     public CalibrateTask(Studio studio) {
     	this.studio = studio;
-    	this.core = studio.core();
-    	
-    	try {
-            stageName = core.getXYStageDevice();  // gets the current Z (focus) stage
-    	} catch (Exception e) {
-            studio.logs().showError("Could not determine focus stage device: " + e.getMessage());
-        }
-    	
+    	this.core = studio.core();    	
     }
     
     public void setOnCalibrationFinished(BiConsumer<Double, Double> callback) {
         this.onCalibrationFinished = callback;
     }
-        
-    private double[] fitGaussian(short[] values) {
-        int n = values.length;
-        double sum = 0;
-        double weightedSum = 0;
-        double weightedSumSq = 0;
-        double maxVal = 0;
-
-        for (int i = 0; i < n; i++) {
-            double x = i + 1;
-            double y = values[i];
-            sum += y;
-            weightedSum += x * y;
-            weightedSumSq += x * x * y;
-            if (y > maxVal) maxVal = y;
-        }
-
-        double mean = weightedSum / sum;
-        double variance = (weightedSumSq / sum) - (mean * mean);
-        double stddev = Math.sqrt(variance);
-
-        return new double[]{maxVal, mean, stddev};
-    }
     
     public void startCalibration() {
     	try {
-    		startZ = core.getPosition(stageName);
+    		startZ = core.getPosition("Z");
     	} catch (Exception e) {
     		studio.logs().showError("Failed to get initial stage position: " + e.getMessage());
     		return;
@@ -84,9 +54,8 @@ public class CalibrateTask {
     	double targetZ = startZ + currentStep * stepSizeUm;
     	
     	try {
-    		core.setPosition(stageName, targetZ);
-    		core.waitForDevice(stageName);
-    		Thread.sleep(100); // Give hardware a moment to settle
+    		core.setPosition("Z", targetZ);
+    		Thread.sleep(1000); // Give hardware a moment to settle
     	} catch (Exception e) {
     		studio.logs().showError("Stage movement failed: " + e.getMessage());
     		return;
@@ -112,7 +81,7 @@ public class CalibrateTask {
                 studio.logs().showError("Unsupported image format: " + img.getClass().getSimpleName());
                 return;
             }
-            double[] result =  fitGaussian(data);
+            double[] result = new GaussianFitter(data).fit();
             double mean = result[1];
             
             positionsUm[currentStep] = targetZ;

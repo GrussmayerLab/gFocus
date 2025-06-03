@@ -12,6 +12,8 @@ import org.jfree.chart.plot.XYPlot;
 import org.jfree.data.xy.XYSeries;
 import org.jfree.data.xy.XYSeriesCollection;
 
+import com.myname.focuslock.GaussianFitter;
+
 import de.embl.rieslab.emu.ui.ConfigurablePanel;
 
 public class GraphPanel extends ConfigurablePanel {
@@ -63,8 +65,13 @@ public class GraphPanel extends ConfigurablePanel {
         for (int i = 0; i < intensityValues.length; i++) {
             rawSeries.add(i + 1, intensityValues[i]);
         }
+        
+        short[] shortValues = new short[intensityValues.length];
+        for (int i = 0; i < intensityValues.length; i++) {
+            shortValues[i] = (short) intensityValues[i];  // explicit cast, beware of overflow!
+        }
 
-        double[] params = fitGaussian(intensityValues);
+        double[] params = new GaussianFitter(shortValues).fit();
         double a = params[0];
         double mu = params[1];
         double sigma = params[2];
@@ -73,30 +80,6 @@ public class GraphPanel extends ConfigurablePanel {
             double y = a * Math.exp(-Math.pow(x - mu, 2) / (2 * sigma * sigma));
             fittedSeries.add(x, y);
         }
-    }
-
-    // Same Gaussian fitting method
-    private double[] fitGaussian(int[] values) {
-        int n = values.length;
-        double sum = 0;
-        double weightedSum = 0;
-        double weightedSumSq = 0;
-        double maxVal = 0;
-
-        for (int i = 0; i < n; i++) {
-            double x = i + 1;
-            double y = values[i];
-            sum += y;
-            weightedSum += x * y;
-            weightedSumSq += x * x * y;
-            if (y > maxVal) maxVal = y;
-        }
-
-        double mean = weightedSum / sum;
-        double variance = (weightedSumSq / sum) - (mean * mean);
-        double stddev = Math.sqrt(variance);
-
-        return new double[]{maxVal, mean, stddev};
     }
 
     // EMU-required overrides

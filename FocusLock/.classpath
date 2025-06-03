@@ -177,5 +177,23 @@
 	<classpathentry kind="lib" path="C:/Program Files/Micro-Manager-2.0/plugins/Micro-Manager/xmpcore-5.1.2.jar"/>
 	<classpathentry kind="lib" path="C:/Program Files/Micro-Manager-2.0/ij.jar"/>
 	<classpathentry kind="lib" path="C:/Users/Jelle/Documents/TU Delft/gFocus/gFocus/FocusLock/jfreechart-1.5.3.jar"/>
+	<classpathentry kind="lib" path="C:/Users/Jelle/Documents/TU Delft/gFocus/gFocus/FocusLock/commons-math-4.0-beta1/commons-math4-core-4.0-beta1.jar"/>
+	<classpathentry kind="lib" path="C:/Users/Jelle/Documents/TU Delft/gFocus/gFocus/FocusLock/commons-math-4.0-beta1/commons-math4-core-4.0-beta1-javadoc.jar"/>
+	<classpathentry kind="lib" path="C:/Users/Jelle/Documents/TU Delft/gFocus/gFocus/FocusLock/commons-math-4.0-beta1/commons-math4-core-4.0-beta1-sources.jar"/>
+	<classpathentry kind="lib" path="C:/Users/Jelle/Documents/TU Delft/gFocus/gFocus/FocusLock/commons-math-4.0-beta1/commons-math4-legacy-4.0-beta1.jar"/>
+	<classpathentry kind="lib" path="C:/Users/Jelle/Documents/TU Delft/gFocus/gFocus/FocusLock/commons-math-4.0-beta1/commons-math4-legacy-4.0-beta1-javadoc.jar"/>
+	<classpathentry kind="lib" path="C:/Users/Jelle/Documents/TU Delft/gFocus/gFocus/FocusLock/commons-math-4.0-beta1/commons-math4-legacy-4.0-beta1-sources.jar"/>
+	<classpathentry kind="lib" path="C:/Users/Jelle/Documents/TU Delft/gFocus/gFocus/FocusLock/commons-math-4.0-beta1/commons-math4-legacy-core-4.0-beta1.jar"/>
+	<classpathentry kind="lib" path="C:/Users/Jelle/Documents/TU Delft/gFocus/gFocus/FocusLock/commons-math-4.0-beta1/commons-math4-legacy-core-4.0-beta1-javadoc.jar"/>
+	<classpathentry kind="lib" path="C:/Users/Jelle/Documents/TU Delft/gFocus/gFocus/FocusLock/commons-math-4.0-beta1/commons-math4-legacy-core-4.0-beta1-sources.jar"/>
+	<classpathentry kind="lib" path="C:/Users/Jelle/Documents/TU Delft/gFocus/gFocus/FocusLock/commons-math-4.0-beta1/commons-math4-legacy-exception-4.0-beta1.jar"/>
+	<classpathentry kind="lib" path="C:/Users/Jelle/Documents/TU Delft/gFocus/gFocus/FocusLock/commons-math-4.0-beta1/commons-math4-legacy-exception-4.0-beta1-javadoc.jar"/>
+	<classpathentry kind="lib" path="C:/Users/Jelle/Documents/TU Delft/gFocus/gFocus/FocusLock/commons-math-4.0-beta1/commons-math4-legacy-exception-4.0-beta1-sources.jar"/>
+	<classpathentry kind="lib" path="C:/Users/Jelle/Documents/TU Delft/gFocus/gFocus/FocusLock/commons-math-4.0-beta1/commons-math4-neuralnet-4.0-beta1.jar"/>
+	<classpathentry kind="lib" path="C:/Users/Jelle/Documents/TU Delft/gFocus/gFocus/FocusLock/commons-math-4.0-beta1/commons-math4-neuralnet-4.0-beta1-javadoc.jar"/>
+	<classpathentry kind="lib" path="C:/Users/Jelle/Documents/TU Delft/gFocus/gFocus/FocusLock/commons-math-4.0-beta1/commons-math4-neuralnet-4.0-beta1-sources.jar"/>
+	<classpathentry kind="lib" path="C:/Users/Jelle/Documents/TU Delft/gFocus/gFocus/FocusLock/commons-math-4.0-beta1/commons-math4-transform-4.0-beta1.jar"/>
+	<classpathentry kind="lib" path="C:/Users/Jelle/Documents/TU Delft/gFocus/gFocus/FocusLock/commons-math-4.0-beta1/commons-math4-transform-4.0-beta1-javadoc.jar"/>
+	<classpathentry kind="lib" path="C:/Users/Jelle/Documents/TU Delft/gFocus/gFocus/FocusLock/commons-math-4.0-beta1/commons-math4-transform-4.0-beta1-sources.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>
