@@ -31,7 +31,6 @@ public class CameraPollingTask {
 
     public void start() {
         try {
-            // Warm-up snap (ignore errors)
             core.setCameraDevice(cameraName);
             core.snapImage();
             core.getImage(); 
@@ -39,14 +38,10 @@ public class CameraPollingTask {
             studio.logs().logMessage("First snap failed (warm-up): " + e.getMessage());
         }
 
-        scheduler.scheduleAtFixedRate(() -> {
+        scheduler.scheduleWithFixedDelay(() -> {
             final int maxRetries = 5;
-            int attempt = 0;
-            boolean success = false;
-
-            while (attempt < maxRetries && !success) {
+            for (int attempt = 1; attempt <= maxRetries; attempt++) {
                 try {
-                    attempt++;
                     core.setCameraDevice(cameraName);
                     core.snapImage();
                     Object img = core.getImage();
@@ -67,10 +62,7 @@ public class CameraPollingTask {
                         return;
                     }
 
-                    // Success: break retry loop
-                    success = true;
-
-                    // Debug output
+                    // Success
                     System.out.println("Snapshot at " + System.currentTimeMillis());
                     for (int i = 0; i < Math.min(256, pixelData.length); i++) {
                         System.out.print(pixelData[i] + " ");
@@ -80,19 +72,14 @@ public class CameraPollingTask {
                     if (onImageUpdate != null) {
                         onImageUpdate.accept(pixelData);
                     }
+                    return; // done if successful
 
                 } catch (Exception e) {
-                    if (attempt >= maxRetries) {
+                    if (attempt == maxRetries) {
                         studio.logs().showError("Failed to acquire image after " + maxRetries + " attempts: " + e.getMessage());
                         e.printStackTrace();
-                    } else {
-                        try {
-                            Thread.sleep(100); // slight delay before retry
-                        } catch (InterruptedException ie) {
-                            Thread.currentThread().interrupt();
-                            return;
-                        }
                     }
+                    // no sleep; retry immediately
                 }
             }
         }, 0, 1, TimeUnit.SECONDS);
