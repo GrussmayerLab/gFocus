@@ -89,4 +89,42 @@ public class CameraPollingTask {
     public void stop() {
         scheduler.shutdownNow();
     }
+    
+    public short[] snapOnce() {
+        final int maxRetries = 5;
+
+        for (int attempt = 1; attempt <= maxRetries; attempt++) {
+            try {
+                core.setCameraDevice(cameraName);
+                core.snapImage();
+                Object img = core.getImage();
+
+                if (img instanceof byte[]) {
+                    byte[] raw = (byte[]) img;
+                    int numPixels = raw.length / 2;
+                    short[] result = new short[numPixels];
+                    for (int i = 0; i < numPixels; i++) {
+                        int low = raw[2 * i] & 0xFF;
+                        int high = raw[2 * i + 1] & 0xFF;
+                        result[i] = (short) ((high << 8) | low);
+                    }
+                    return result;
+                } else if (img instanceof short[]) {
+                    return (short[]) img;
+                } else {
+                    studio.logs().showError("Unsupported image type: " + img.getClass().getSimpleName());
+                    return null;
+                }
+
+            } catch (Exception e) {
+                if (attempt == maxRetries) {
+                    studio.logs().showError("snapOnce failed after " + maxRetries + " attempts: " + e.getMessage());
+                    e.printStackTrace();
+                }
+                // immediate retry
+            }
+        }
+
+        return null; // All attempts failed
+    }
 }

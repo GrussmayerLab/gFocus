@@ -4,6 +4,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.function.BiConsumer;
 import com.myname.focuslock.GaussianFitter;
+import com.myname.focuslock.CameraPollingTask;
 
 import org.micromanager.Studio;
 
@@ -13,7 +14,6 @@ public class CalibrateTask {
     private Studio studio;
     private CMMCore core;
     
-    private final String cameraName = "gFocus Light Sensor";
     private final ScheduledExecutorService scheduler = Executors.newSingleThreadScheduledExecutor();
     private BiConsumer<Double, Double> onCalibrationFinished;
 
@@ -69,25 +69,7 @@ public class CalibrateTask {
     	}
     	
     	try {
-    		core.setCameraDevice(cameraName);
-    		core.snapImage();
-    		Object img = core.getImage();
-    		short[] data;
-    		
-            if (img instanceof byte[]) {
-                byte[] raw = (byte[]) img;
-                data = new short[raw.length / 2];
-                for (int i = 0; i < data.length; i++) {
-                    int low = raw[2 * i] & 0xFF;
-                    int high = raw[2 * i + 1] & 0xFF;
-                    data[i] = (short) ((high << 8) | low);
-                }
-            } else if (img instanceof short[]) {
-                data = (short[]) img;
-            } else {
-                studio.logs().showError("Unsupported image format: " + img.getClass().getSimpleName());
-                return;
-            }
+    		short[] data = new CameraPollingTask(studio).snapOnce();
             double[] result = new GaussianFitter(data).fit();
             double mean = result[1];
             
@@ -96,7 +78,7 @@ public class CalibrateTask {
             studio.logs().logMessage("Step " + currentStep + ": Z=" + targetZ + ", Mean=" + mean);
             
             currentStep++;
-            scheduler.schedule(this::stepCalibration, 500, java.util.concurrent.TimeUnit.MILLISECONDS); // 0.5s between steps
+            scheduler.schedule(this::stepCalibration, 1000, java.util.concurrent.TimeUnit.MILLISECONDS); // 1.0s between steps
     	} catch (Exception e) {
             studio.logs().showError("Image acquisition failed: " + e.getMessage());
     	}
