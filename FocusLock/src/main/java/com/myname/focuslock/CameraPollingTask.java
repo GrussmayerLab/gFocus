@@ -39,7 +39,7 @@ public class CameraPollingTask {
         }
 
         scheduler.scheduleWithFixedDelay(() -> {
-            final int maxRetries = 5;
+            final int maxRetries = 10;
             for (int attempt = 1; attempt <= maxRetries; attempt++) {
                 try {
                     core.setCameraDevice(cameraName);
@@ -91,7 +91,7 @@ public class CameraPollingTask {
     }
     
     public short[] snapOnce() {
-        final int maxRetries = 5;
+        final int maxRetries = 10;
 
         for (int attempt = 1; attempt <= maxRetries; attempt++) {
             try {
