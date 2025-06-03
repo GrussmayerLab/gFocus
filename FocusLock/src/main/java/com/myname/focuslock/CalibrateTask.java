@@ -18,7 +18,7 @@ public class CalibrateTask {
     private BiConsumer<Double, Double> onCalibrationFinished;
 
     private final int numSteps = 6;
-    private final double stepSizeUm = 25.0;
+    private final double stepSizeUm = 0.25;
     
     private final double[] positionsUm = new double[numSteps];
     private final double[] pixelMeans = new double[numSteps];
