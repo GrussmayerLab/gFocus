@@ -140,7 +140,7 @@ bool Protocol::validateDeviceMessage(const std::vector<uint8_t>& message) {
 }
 
 bool Protocol::validateDataMessage(const std::vector<uint8_t>& message) {
-    if (message.size() < 128) {
+    if (message.size() < 32) {
         error = "Message too short.";
         return false;
     }
@@ -164,7 +164,7 @@ bool Protocol::validateDataMessage(const std::vector<uint8_t>& message) {
     std::vector<uint8_t> coreMessage(startFlagIt + 1, stopFlagIt - 1);
 
     // Check if coreMessage has the expected size
-    if (coreMessage.size() < 128) {
+    if (coreMessage.size() < 32) {
         error = "Core message too short.";
         return false;
     }

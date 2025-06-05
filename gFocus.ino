@@ -18,6 +18,11 @@
 
 #define TIMER_INTERVAL_FQ 10  // 10 Hz
 
+#define ACK 0xAA
+#define NACK 0x55
+#define MAX_RETRIES 3
+#define ACK_TIMEOUT_MS 100
+
 float exposureTime = 0.1f;  // 100 µs
 uint16_t averagedData[128] = {0};
 uint16_t tempBuffer[128];
@@ -33,11 +38,11 @@ Message fifo_queue[QUEUE_SIZE];
 int fifo_head = 0;
 int fifo_tail = 0;
 
-uint8_t SerialUSB_buffer[BUFFER_SIZE];
+uint8_t Serial_buffer[BUFFER_SIZE];
 int buffer_index = 0;
 
 void checkAndExtractMessages();
-void processSerialUSBCommand();
+void processSerialCommand();
 uint8_t calculateCRC(uint8_t *args, int argCount);
 void handleGetDevice();
 void handleGetSettings(uint8_t average, float exposure);
@@ -45,6 +50,7 @@ void initializeLightSensor();
 void onTimerInterrupt();
 void runMeasurement(uint16_t* buffer);
 void sendData(uint16_t* buffer, size_t length);
+bool waitForAck(unsigned long timeout = ACK_TIMEOUT_MS);
 // FIFO Helper Functions
 bool isFIFOFull() { return ((fifo_head + 1) % QUEUE_SIZE) == fifo_tail; }
 bool isFIFOEmpty() { return fifo_head == fifo_tail; }
@@ -75,19 +81,19 @@ bool dequeueMessage(Message *msg) {
 
 void setup() {
     digitalWrite(LED_BUILTIN, LOW);
-    SerialUSB.begin(115200);
+    Serial.begin(115200);
     pinMode(S_CLK, OUTPUT);
     pinMode(S_DIN, OUTPUT);
-    analogReadResolution(12); // Set to 12 bits
+    // analogReadResolution(12); // Set to 12 bits
     initializeLightSensor();
 }
 
 void loop() {
   // triggerCamera();
   // delay(1000);
-    int ch = SerialUSB.read();
+    int ch = Serial.read();
     if (ch != -1) {
-        SerialUSB_buffer[buffer_index++] = (uint8_t)ch;
+        Serial_buffer[buffer_index++] = (uint8_t)ch;
 
         if (buffer_index >= BUFFER_SIZE) {
             buffer_index = 0; // Prevent overflow
@@ -99,7 +105,7 @@ void loop() {
 
     // Process the next available command in FIFO
     if (!isFIFOEmpty()) {
-        processSerialUSBCommand();
+        processSerialCommand();
     }
 }
 
@@ -109,18 +115,18 @@ void checkAndExtractMessages() {
 
     // Scan the buffer to find the first START_FLAG and END_FLAG
     for (int i = 0; i < buffer_index; i++) {
-        if (SerialUSB_buffer[i] == START_FLAG && startIdx == -1) {
+        if (Serial_buffer[i] == START_FLAG && startIdx == -1) {
             startIdx = i; // Mark the start of a valid message
         }
-        if (SerialUSB_buffer[i] == END_FLAG && startIdx != -1) {
+        if (Serial_buffer[i] == END_FLAG && startIdx != -1) {
             endIdx = i; // Found a complete message
             int messageLength = endIdx - startIdx + 1;
 
             // Store the valid message in FIFO
-            enqueueMessage(&SerialUSB_buffer[startIdx], messageLength);
+            enqueueMessage(&Serial_buffer[startIdx], messageLength);
 
             // Remove processed message from buffer
-            memmove(SerialUSB_buffer, &SerialUSB_buffer[endIdx + 1], BUFFER_SIZE - (endIdx + 1));
+            memmove(Serial_buffer, &Serial_buffer[endIdx + 1], BUFFER_SIZE - (endIdx + 1));
             buffer_index -= (endIdx + 1);
 
             // Reset start/end markers and continue scanning
@@ -133,11 +139,11 @@ void checkAndExtractMessages() {
     // If buffer is full but no complete message, reset to prevent overflow
     if (buffer_index >= BUFFER_SIZE) {
         buffer_index = 0;
-        memset(SerialUSB_buffer, 0, sizeof(SerialUSB_buffer));
+        memset(Serial_buffer, 0, sizeof(Serial_buffer));
     }
 }
 
-void processSerialUSBCommand() {
+void processSerialCommand() {
     Message msg;
     if (!dequeueMessage(&msg)) return;
 
@@ -156,7 +162,7 @@ void processSerialUSBCommand() {
     // Validate CRC
     calculatedCRC = calculateCRC(&msg.data[1], length - 1);
     if (calculatedCRC != receivedCRC) {
-        SerialUSB.write(RESPONSE_ERROR);
+        Serial.write(RESPONSE_ERROR);
         return;
     }
 
@@ -167,7 +173,7 @@ void processSerialUSBCommand() {
             break;
         case CMD_SET_SETTINGS:
             if (length < 6) {
-                SerialUSB.write(RESPONSE_ERROR);
+                Serial.write(RESPONSE_ERROR);
                 return;
             }
             average = msg.data[3]; // uint8_t
@@ -179,7 +185,7 @@ void processSerialUSBCommand() {
             triggerCamera();
             break;
         default:
-            SerialUSB.write(RESPONSE_ERROR);
+            Serial.write(RESPONSE_ERROR);
             break;
     }
 }
@@ -196,12 +202,12 @@ void handleGetDevice() {
     uint8_t response[] = {CMD_GET_DEVICE, 0x01, DEVICE_ID};
     uint8_t crc = calculateCRC(response, 3);
 
-    SerialUSB.write(START_FLAG);
+    Serial.write(START_FLAG);
     for (int i = 0; i < 3; i++) {
-        SerialUSB.write(response[i]);
+        Serial.write(response[i]);
     }
-    SerialUSB.write(crc);
-    SerialUSB.write(END_FLAG);
+    Serial.write(crc);
+    Serial.write(END_FLAG);
 }
 
 void triggerCamera() {
@@ -222,15 +228,23 @@ void triggerCamera() {
     averagedData[i] /= averageCount;
   }
 
-  // Send over Serial or USB
-  sendData(averagedData, 128);
-  // for (int i = 0; i < 128; i++) {
-  //   SerialUSB.print(averagedData[i]);
-  //   SerialUSB.print(", ");
-  // }
-  // SerialUSB.println();
-}
+  // Send data in four chunks of 32 values each
+  for (int chunk = 0; chunk < 4; chunk++) {
+    int start = chunk * 32;
+    int retries = 0;
+    bool success = false;
 
+    while (retries < MAX_RETRIES) {
+      sendData(&averagedData[start], 32);
+      if (waitForAck()) {
+        success = true;
+        break;
+      } else {
+        retries++;
+      }
+    }
+  }
+}
 
 void runMeasurement(uint16_t* buffer) {
   digitalWrite(S_DIN, HIGH);
@@ -252,45 +266,41 @@ void runMeasurement(uint16_t* buffer) {
 
 void sendData(uint16_t* buffer, size_t length) {
   // Total size: CMD (1) + LEN (1) + DATA (length) + CRC (1) + flags (2)
-  size_t payloadSize = 1 + 1 + 1*128; 
-  uint8_t response[payloadSize];
+  size_t payloadSize = 1 + 1 + 1*length; 
+  uint8_t response[payloadSize+3];
 
   // First packet: low bytes
   response[0] = CMD_GET_DATA;
   response[1] = length;
 
   for (size_t i = 0; i < length; i++) {
-      response[2 + i] = buffer[i] & 0xFF;  // Low byte
+    response[2 + i] = buffer[i] & 0xFF;  // Low byte
   }
 
 
   uint8_t crc1 = calculateCRC(response, payloadSize);
 
-  SerialUSB.write(START_FLAG);
-  SerialUSB.write(response, payloadSize);
-  SerialUSB.write(crc1);
-  SerialUSB.write(END_FLAG);
+  Serial.write(START_FLAG);
+  Serial.write(response, payloadSize);
+  Serial.write(crc1);
+  Serial.write(END_FLAG);
 
-  delayMicroseconds(100);
+  delayMicroseconds(1000);
 
   // Second packet: high bytes
   response[0] = CMD_GET_DATA;  // different command for clarity
   response[1] = length;
   
   for (size_t i = 0; i < length; i++) {
-      response[2 + i] = (buffer[i] >> 8) & 0xFF;  // High byte
+    response[2 + i] = (buffer[i] >> 8) & 0xFF;  // High byte
   }
 
   uint8_t crc2 = calculateCRC(response, payloadSize);
 
-  SerialUSB.write(START_FLAG);
-  SerialUSB.flush();  // Ensures data is actually transmitted
-  SerialUSB.write(response, payloadSize);
-  SerialUSB.flush();  // Ensures data is actually transmitted
-  SerialUSB.write(crc2);
-  SerialUSB.flush();  // Ensures data is actually transmitted
-  SerialUSB.write(END_FLAG);
-  SerialUSB.flush();  // Ensures data is actually transmitted
+  Serial.write(START_FLAG);
+  Serial.write(response, payloadSize);
+  Serial.write(crc2);
+  Serial.write(END_FLAG);
 }
 
 void initializeLightSensor() {
@@ -308,3 +318,16 @@ void initializeLightSensor() {
     ClockPulse();
   }
 }
+
+bool waitForAck(unsigned long timeout = ACK_TIMEOUT_MS) {
+  unsigned long startTime = millis();
+  while (millis() - startTime < timeout) {
+    if (Serial.available()) {
+      int resp = Serial.read();
+      if (resp == ACK) return true;
+      if (resp == NACK) return false;
+    }
+  }
+  return false;  // Timeout
+}
+

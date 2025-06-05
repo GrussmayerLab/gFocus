@@ -88,6 +88,28 @@ void gFocus::GetName(char* name) const
 	CDeviceUtils::CopyLimitedString(name, g_CameraDeviceName);
 }
 
+bool gFocus::ReadExactBytes(const std::string& port, uint8_t* buffer, size_t expectedBytes, unsigned long timeoutMs)
+{
+	unsigned long totalRead = 0;
+	unsigned long startTime = GetClockTicksUs() / 1000; // Convert µs to ms
+
+	while (totalRead < expectedBytes) {
+		unsigned long bytesRead = 0;
+		int ret = ReadFromComPort(port.c_str(), buffer + totalRead, static_cast<unsigned>(expectedBytes - totalRead), bytesRead);
+		if (ret != DEVICE_OK) return false;
+
+		totalRead += bytesRead;
+
+		unsigned long now = GetClockTicksUs() / 1000;
+		if (now - startTime > timeoutMs) break;
+
+		CDeviceUtils::SleepMs(1); // Small delay to avoid busy looping
+	}
+
+	return totalRead == expectedBytes;
+}
+
+
 /**
 * Performs exposure and grabs a single image.
 * This function should block during the actual exposure and return immediately afterwards
@@ -97,82 +119,88 @@ void gFocus::GetName(char* name) const
 int gFocus::SnapImage()
 {
 	LogMessage("SnapImage...", false);
-	std::vector<uint8_t> lower(128);
-	std::vector<uint8_t> upper(128);
+	std::vector<uint8_t> lowerAll(128);
+	std::vector<uint8_t> upperAll(128);
 	std::vector<uint8_t> combined(256);
 
-	// Send new settings
+	const int MAX_RETRIES = 3;
+
+	// Send settings
 	std::vector<uint8_t> message = protocol_.createSetSettingsMessage(settings_);
 	int ret = WriteToComPort(port_.c_str(), message.data(), static_cast<unsigned int>(message.size()));
 	if (ret != DEVICE_OK) return ret;
 
-	std::string ans;
-	// Get data
+	// Trigger acquisition
 	message = protocol_.createGetDataMessage();
 	ret = WriteToComPort(port_.c_str(), message.data(), static_cast<unsigned int>(message.size()));
 	if (ret != DEVICE_OK) return ret;
 
-	CDeviceUtils::SleepMs(10);
-
-	std::vector<uint8_t> buffer(133);
+	std::vector<uint8_t> chunkLower(37);
+	std::vector<uint8_t> chunkUpper(37);
 	unsigned long bytesRead = 0;
-	// First lower part
-	ret = ReadFromComPort(port_.c_str(), buffer.data(), static_cast<unsigned>(buffer.size()), bytesRead);
 
-	std::ostringstream oss;
+	for (int chunk = 0; chunk < 4; ++chunk) {
+		bool success = false;
+		for (int retry = 0; retry < MAX_RETRIES; ++retry) {
+			// --- Read Lower Bytes ---
+			if (!ReadExactBytes(port_, chunkLower.data(), 37, 200)) {  // 200 ms timeout
+				LogMessage("Timeout waiting for chunk " + std::to_string(chunk) + " lower bytes.");
+				return DEVICE_ERR;
+			}
 
-	for (uint8_t b : buffer) {
-		oss << std::hex << std::setw(2) << std::setfill('0') << static_cast<int>(b) << " ";
+			if (!protocol_.validateDataMessage(chunkLower)) {
+				std::ostringstream oss;
+				for (uint8_t byte : chunkLower) {
+					oss << std::hex << std::setw(2) << std::setfill('0') << static_cast<int>(byte) << " ";
+				}
+
+				LogMessage("Chunk " + std::to_string(chunk) + " lower invalid, retry " + std::to_string(retry) + " data: " + oss.str());				
+				uint8_t nack = 0x55;
+				WriteToComPort(port_.c_str(), &nack, 1);
+				continue;
+			}
+
+			// --- Read Upper Bytes ---
+			if (!ReadExactBytes(port_, chunkUpper.data(), 37, 200)) {  // 200 ms timeout
+				LogMessage("Timeout waiting for chunk " + std::to_string(chunk) + " lower bytes.");
+				return DEVICE_ERR;
+			}
+
+			if (!protocol_.validateDataMessage(chunkUpper)) {
+				LogMessage("Chunk " + std::to_string(chunk) + " upper invalid, retry " + std::to_string(retry));
+				uint8_t nack = 0x55;
+				WriteToComPort(port_.c_str(), &nack, 1);
+				continue;
+			}
+
+			// Both passed validation
+			uint8_t ack = 0xAA;
+			WriteToComPort(port_.c_str(), &ack, 1);
+			std::copy(chunkLower.begin() + 3, chunkLower.end() - 2, lowerAll.begin() + chunk * 32);
+			std::copy(chunkUpper.begin() + 3, chunkUpper.end() - 2, upperAll.begin() + chunk * 32);
+			success = true;
+			break;
+		}
+
+		if (!success) {
+			LogMessage("Failed to get valid chunk " + std::to_string(chunk) + " after retries.");
+			return DEVICE_ERR;
+		}
 	}
-	LogMessage("Message: " + oss.str(), true);
 
-	bool succes = protocol_.validateDataMessage(buffer);
-
-	if (!succes) {
-		LogMessage(protocol_.getError());
-		return DEVICE_ERR;
-	}
-
-	std::copy(buffer.begin() + 3, buffer.end() - 2, lower.data());
-
-	buffer.clear();
-	buffer.resize(133); // Restore size before reading again
-
-	// Second upper part
-	bytesRead = 0;
-
-	ret = ReadFromComPort(port_.c_str(), buffer.data(), static_cast<unsigned>(buffer.size()), bytesRead);
-	oss.clear();
-
-	for (uint8_t b : buffer) {
-		oss << std::hex << std::setw(2) << std::setfill('0') << static_cast<int>(b) << " ";
-	}
-	LogMessage("Message: " + oss.str(), true);
-
-	succes = protocol_.validateDataMessage(buffer);
-
-	if (!succes) {
-		LogMessage(protocol_.getError());
-		return DEVICE_ERR;
-	}
-
-	std::copy(buffer.begin() + 3, buffer.end() - 2, upper.data());
-
+	// Reconstruct final combined image buffer
 	for (size_t i = 0; i < 128; ++i) {
-		combined[i * 2] = lower[i]; // Low byte
-		combined[i * 2 + 1] = upper[i]; // High byte
+		combined[i * 2] = lowerAll[i];       // Low byte
+		combined[i * 2 + 1] = upperAll[i];   // High byte
 	}
-
-	// Extract pixel data
-	const size_t imageSize = this->GetImageBufferSize();
-	LogMessage("imageSize: " + std::to_string(imageSize), true);
 
 	uint8_t* pixels = img_.GetPixelsRW();
-
 	std::copy(combined.begin(), combined.end(), pixels);
 
+	LogMessage("SnapImage done.");
 	return DEVICE_OK;
 }
+
 
 /**
 * Returns pixel data.

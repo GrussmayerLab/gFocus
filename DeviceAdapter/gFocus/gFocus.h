@@ -68,12 +68,13 @@ public:
 	unsigned GetImageHeight() const;
 	unsigned GetBitDepth() const;
 	unsigned GetImageBytesPerPixel() const;
-
 	int WriteToComPortH(const unsigned char* command, unsigned len) { return WriteToComPort(port_.c_str(), command, len); }
 	int ReadFromComPortH(unsigned char* answer, unsigned maxLen, unsigned long& bytesRead)
 	{
 		return ReadFromComPort(port_.c_str(), answer, maxLen, bytesRead);
 	}
+	bool ReadExactBytes(const std::string& port, uint8_t* buffer, size_t expectedBytes, unsigned long timeoutMs);
+
 private:
 	int GetControllerVersion(int& version);
 	bool initialized_;
