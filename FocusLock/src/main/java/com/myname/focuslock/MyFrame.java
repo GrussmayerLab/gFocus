@@ -81,7 +81,7 @@ public class MyFrame extends ConfigurableMainFrame {
         int[] gaussianData = new int[128];
 
 		
-		GraphPanel graphPanel = new GraphPanel(gaussianData);
+		GraphPanel graphPanel = new GraphPanel(gaussianData, 0, 0);
 		graphPanel.setBounds(220, 10, 396, 411);
 		lockPanel.add(graphPanel);
 		
@@ -98,6 +98,11 @@ public class MyFrame extends ConfigurableMainFrame {
 		    	graphPanel.updateGraph(intData);
 		    	graphPanel.repaint();           // force redraw if needed
 		    });
+		});
+		
+		lockPanel.setReferenceDataListener(data -> {
+			graphPanel.updateReferenceGraph(data[0], data[1]);
+			graphPanel.repaint();
 		});
 	}
 	

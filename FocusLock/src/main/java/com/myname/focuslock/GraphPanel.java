@@ -20,18 +20,21 @@ public class GraphPanel extends ConfigurablePanel {
 
     private XYSeries rawSeries;
     private XYSeries fittedSeries;
+    private XYSeries referenceSeries;
 
-    public GraphPanel(int[] intensityValues) {
+    public GraphPanel(int[] intensityValues, double mean, double sigma) {
         super("GraphPanal");
 
         setLayout(new BorderLayout());
 
         rawSeries = new XYSeries("Raw Data");
         fittedSeries = new XYSeries("Fitted Gaussian");
-
+        referenceSeries = new XYSeries("Reference Gaussian");
+        
         XYSeriesCollection dataset = new XYSeriesCollection();
         dataset.addSeries(rawSeries);
         dataset.addSeries(fittedSeries);
+        dataset.addSeries(referenceSeries);
 
         JFreeChart chart = ChartFactory.createXYLineChart(
             "",
@@ -53,6 +56,7 @@ public class GraphPanel extends ConfigurablePanel {
 
         // Initial population
         updateGraph(intensityValues);
+        updateReferenceGraph(mean, sigma);
     }
 
     /**
@@ -81,6 +85,18 @@ public class GraphPanel extends ConfigurablePanel {
             fittedSeries.add(x, y);
         }
     }
+    
+    public void updateReferenceGraph(double mean, double sigma) {
+        referenceSeries.clear();
+
+        double a = 4000;  // peak height for visualization (or reuse from last fit)
+
+        for (int x = 1; x <= 128; x++) {
+            double y = a * Math.exp(-Math.pow(x - mean, 2) / (2 * sigma * sigma));
+            referenceSeries.add(x, y);
+        }
+    }
+
 
     // EMU-required overrides
     @Override protected void addComponentListeners() {}
@@ -103,7 +119,7 @@ public class GraphPanel extends ConfigurablePanel {
         }
 
         JFrame frame = new JFrame("Graph Panel Test");
-        GraphPanel panel = new GraphPanel(values);
+        GraphPanel panel = new GraphPanel(values, 0, 0);
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         frame.setSize(900, 600);
         frame.setLayout(new BorderLayout());

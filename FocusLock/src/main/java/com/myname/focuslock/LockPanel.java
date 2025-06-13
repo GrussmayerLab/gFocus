@@ -38,16 +38,16 @@ public class LockPanel extends ConfigurablePanel {
 	private JLabel lblStatus;
 	private CameraPollingTask cameraPollingTask;
 	private Consumer<short[]> pixelDataListener;
+	private Consumer<double[]> referanceDataListener;
 
 	// properties
 	public final String FOCUS_AVERAGE = "average";
 	public final String FOCUS_EXPOSURE = "exposure";
-	private final static String FOCUS_STABILIZATION = "Z stage focus locking";
 	
 	// settings
 	private float exposure;
 	private int average;
-
+	private double slopeCal;
 	private SystemController systemController_;
 	
 	public LockPanel(String label, SystemController systemController) {
@@ -115,32 +115,44 @@ public class LockPanel extends ConfigurablePanel {
 
 	@Override
 	protected void addComponentListeners() {
-		String propertyAverage = getPanelLabel() + " " + FOCUS_AVERAGE;
-		String propertyExposure = getPanelLabel() + " " + FOCUS_EXPOSURE;
-        
-        SwingUIListeners.addChangeListenerOnNumericalValue(this, propertyExposure, spinner);
-        SwingUIListeners.addChangeListenerOnNumericalValue(this, propertyAverage, spinner_1);
-        
-        // Button calibrate
-        btnCalibration_1.addActionListener(e -> {
-        	CalibrateTask calibrateTask = new CalibrateTask(systemController_.getStudio());
-        	
-        	calibrateTask.setOnCalibrationFinished((slope, intercept) -> {
-        		lblStatus.setText(String.format("Calibrated: %.4f µm/pixel", slope));
-        	});
-        	calibrateTask.startCalibration();
-        });
-		
-		// monitor position
-		SwingUIListeners.addActionListenerToBooleanAction(b->monitorPosition(b), btnEnable);
-		
-		// lock focus
-		try {
-			SwingUIListeners.addActionListenerToTwoState(this, FOCUS_STABILIZATION, btnLock);
-		} catch (IncorrectUIPropertyTypeException exception) {
-			exception.printStackTrace();
-		}
+	    String propertyAverage = getPanelLabel() + " " + FOCUS_AVERAGE;
+	    String propertyExposure = getPanelLabel() + " " + FOCUS_EXPOSURE;
+
+	    SwingUIListeners.addChangeListenerOnNumericalValue(this, propertyExposure, spinner);
+	    SwingUIListeners.addChangeListenerOnNumericalValue(this, propertyAverage, spinner_1);
+
+	    // Disable Lock Focus button by default
+	    btnLock.setEnabled(false);
+
+	    // Button calibrate
+	    btnCalibration_1.addActionListener(e -> {
+	        // If Focus Lock is on, turn it off before calibrating
+	        if (btnLock.isSelected()) {
+	            btnLock.setSelected(false);          // uncheck the toggle
+	            focusLocking(false);                 // disable focus lock logic
+	            lblStatus.setText("Focuslock disabled for calibration.");
+	        }
+
+	        CalibrateTask calibrateTask = new CalibrateTask(systemController_.getStudio());
+
+	        calibrateTask.setOnCalibrationFinished((slope, intercept) -> {
+	            lblStatus.setText(String.format("Calibrated: %.4f µm/pixel", slope));
+	            slopeCal = slope;
+
+	            // Enable Focus Lock button after calibration
+	            btnLock.setEnabled(true);
+	        });
+
+	        calibrateTask.startCalibration();
+	    });
+
+	    // Monitor position
+	    SwingUIListeners.addActionListenerToBooleanAction(b -> monitorPosition(b), btnEnable);
+
+	    // Lock focus
+	    SwingUIListeners.addActionListenerToBooleanAction(b -> focusLocking(b), btnLock);
 	}
+
 
 	@Override
 	public String getDescription() {
@@ -231,7 +243,26 @@ public class LockPanel extends ConfigurablePanel {
 	    }
 	}
 	
+	protected void focusLocking(boolean enabled) {
+		FocusTask focusTask = new FocusTask(systemController_.getStudio());
+
+		if (enabled) {
+			double[] result = focusTask.startFocus(slopeCal);
+	        lblStatus.setText("Start Focuslock");
+	        if (referanceDataListener != null) {
+	        	referanceDataListener.accept(result);
+	        }
+		} else {
+			focusTask.stopFocus();
+	        lblStatus.setText("Stop Focuslock");
+		}
+	}
+	
 	public void setPixelDataListener(Consumer<short[]> listener) {
 	    this.pixelDataListener = listener;
+	}
+	
+	public void setReferenceDataListener(Consumer<double[]> listener) {
+		this.referanceDataListener = listener;
 	}
 }
