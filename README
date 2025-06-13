@@ -62,11 +62,9 @@ This project is inspired by similar systems like qgFocus and pgFocus and follows
 
 You should see the following interface:
 
-![gFocus](/interface.PNG)
 
 Next, go to the **Configuration** tab and enter the required properties:
 
-![gFocus_properties](/config.PNG)
 
 Now you're ready to go!
 
