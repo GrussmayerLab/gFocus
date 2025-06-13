@@ -4,15 +4,13 @@
 
 This project is inspired by similar systems like qgFocus and pgFocus and follows the same naming convention.
 
----
 
 ## Key Features
 
-- 🔄 Real-time focus correction  
-- 🧠 Micro-Manager compatible  
-- 🔧 Flexible hardware support: works with any motorized Z-stage controllable through Micro-Manager  
+- Real-time focus correction  
+- Micro-Manager compatible  
+- Flexible hardware support: works with any motorized Z-stage controllable through Micro-Manager  
 
----
 
 ## How It Works
 
@@ -23,7 +21,6 @@ This project is inspired by similar systems like qgFocus and pgFocus and follows
 5. The system calculates the amount of drift using a Gaussian fit to find the center of the beam.  
 6. A feedback loop adjusts the Z-position of the stage to return the beam to its original position — restoring focus.  
 
----
 
 ## Getting Started
 
@@ -57,7 +54,6 @@ This project is inspired by similar systems like qgFocus and pgFocus and follows
      - Place `.h` files in the **header** folder and `.cpp` files in the **source** folder.  
      - Compile the project and place the resulting `.dll` file into the Micro-Manager root directory.
 
----
 
 ## Usage
 
@@ -83,7 +79,6 @@ In the interface:
 
 **Happy Imaging!**
 
----
 
 ## License
 
