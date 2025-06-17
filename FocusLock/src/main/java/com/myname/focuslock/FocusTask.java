@@ -18,7 +18,6 @@ public class FocusTask {
     private String stage;
     private double calSlope = 0;
     private double refMean = 0;
-    private double refSigm = 0;
     private double focusThreshold = 2;
     private double mean = 0;
     private boolean start = false;
@@ -30,18 +29,17 @@ public class FocusTask {
     
     public double[] startFocus(double slopeCal) {
     	calSlope = slopeCal;
+    	double[] result = new double[3];
     	try {
     		short[] data = new CameraPollingTask(studio).snapOnce();
-            double[] result = new GaussianFitter(data).fit();
+            result = new GaussianFitter(data).fit();
             refMean = result[1];
-            refSigm = result[2];
-            
     	} catch(Exception e) {
     		studio.logs().showError("Image acquisition failed: " + e.toString());
     	}
     	start = true;
     	scheduler.execute(this::focussing);
-    	return new double [] {refSigm, refMean};
+    	return result;
     }
     
     private void focussing() {

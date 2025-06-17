@@ -22,7 +22,7 @@ public class GraphPanel extends ConfigurablePanel {
     private XYSeries fittedSeries;
     private XYSeries referenceSeries;
 
-    public GraphPanel(int[] intensityValues, double mean, double sigma) {
+    public GraphPanel(int[] intensityValues, double[] referenceValues) {
         super("GraphPanal");
 
         setLayout(new BorderLayout());
@@ -56,7 +56,7 @@ public class GraphPanel extends ConfigurablePanel {
 
         // Initial population
         updateGraph(intensityValues);
-        updateReferenceGraph(mean, sigma);
+        updateReferenceGraph(referenceValues);
     }
 
     /**
@@ -86,13 +86,15 @@ public class GraphPanel extends ConfigurablePanel {
         }
     }
     
-    public void updateReferenceGraph(double mean, double sigma) {
+    public void updateReferenceGraph(double [] params) {
         referenceSeries.clear();
 
-        double a = 4000;  // peak height for visualization (or reuse from last fit)
+        double a = params[0];
+        double mu = params[1];
+        double sigma = params[2];
 
         for (int x = 1; x <= 128; x++) {
-            double y = a * Math.exp(-Math.pow(x - mean, 2) / (2 * sigma * sigma));
+            double y = a * Math.exp(-Math.pow(x - mu, 2) / (2 * sigma * sigma));
             referenceSeries.add(x, y);
         }
     }
@@ -117,9 +119,9 @@ public class GraphPanel extends ConfigurablePanel {
         for (int i = 0; i < 128; i++) {
             values[i] = (int)(Math.random() * 4096);
         }
-
+        double[] reference = new double[3];
         JFrame frame = new JFrame("Graph Panel Test");
-        GraphPanel panel = new GraphPanel(values, 0, 0);
+        GraphPanel panel = new GraphPanel(values, reference);
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         frame.setSize(900, 600);
         frame.setLayout(new BorderLayout());

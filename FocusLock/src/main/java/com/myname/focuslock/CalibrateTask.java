@@ -56,6 +56,7 @@ public class CalibrateTask {
     private void stepCalibration() {
     	if (currentStep >= numSteps) {
     		finishCalibration();
+    		return;
     	}
     	
     	double targetZ = startZ + currentStep * stepSizeUm;

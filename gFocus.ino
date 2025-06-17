@@ -14,7 +14,7 @@
 
 #define S_CLK 9
 #define S_DIN 8
-#define S_OUT A5
+#define S_OUT A0
 
 #define TIMER_INTERVAL_FQ 10  // 10 Hz
 
@@ -50,7 +50,7 @@ void initializeLightSensor();
 void onTimerInterrupt();
 void runMeasurement(uint16_t* buffer);
 void sendData(uint16_t* buffer, size_t length);
-bool waitForAck(unsigned long timeout = ACK_TIMEOUT_MS);
+bool waitForAck(unsigned long timeout);
 // FIFO Helper Functions
 bool isFIFOFull() { return ((fifo_head + 1) % QUEUE_SIZE) == fifo_tail; }
 bool isFIFOEmpty() { return fifo_head == fifo_tail; }
@@ -84,7 +84,7 @@ void setup() {
     Serial.begin(115200);
     pinMode(S_CLK, OUTPUT);
     pinMode(S_DIN, OUTPUT);
-    // analogReadResolution(12); // Set to 12 bits
+    analogReadResolution(12); // Set to 12 bits
     initializeLightSensor();
 }
 
@@ -236,7 +236,7 @@ void triggerCamera() {
 
     while (retries < MAX_RETRIES) {
       sendData(&averagedData[start], 32);
-      if (waitForAck()) {
+      if (waitForAck(ACK_TIMEOUT_MS)) {
         success = true;
         break;
       } else {
@@ -319,7 +319,7 @@ void initializeLightSensor() {
   }
 }
 
-bool waitForAck(unsigned long timeout = ACK_TIMEOUT_MS) {
+bool waitForAck(unsigned long timeout) {
   unsigned long startTime = millis();
   while (millis() - startTime < timeout) {
     if (Serial.available()) {
