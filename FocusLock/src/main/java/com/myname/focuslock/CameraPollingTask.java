@@ -36,7 +36,7 @@ public class CameraPollingTask {
     
     public void setExposure(double exposure) {
         try {
-            privateCore.setProperty(cameraName, "Exposure", exposure);
+            privateCore.setProperty(cameraName, "Time [ms]", exposure);
             studio.logs().logMessage("Set exposure to: " + exposure);
         } catch (Exception e) {
             studio.logs().showError("Failed to set exposure: " + e.getMessage());
@@ -45,7 +45,7 @@ public class CameraPollingTask {
 
     public void setAverage(int average) {
         try {
-            privateCore.setProperty(cameraName, "Averaging", average);
+            privateCore.setProperty(cameraName, "Average #", average);
             studio.logs().logMessage("Set averaging to: " + average);
         } catch (Exception e) {
             studio.logs().showError("Failed to set averaging: " + e.getMessage());
