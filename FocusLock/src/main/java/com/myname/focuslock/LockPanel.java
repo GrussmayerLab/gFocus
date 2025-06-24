@@ -197,10 +197,10 @@ public class LockPanel extends ConfigurablePanel {
 
 	@Override
 	protected void propertyhasChanged(String propertyName, String newvalue) {
-	    String propertyName1 = "settings average";
-	    String propertyName2 = "settings exposure";
-	    studio.logs().logMessage("name: " + propertyName);
+	    String propertyName1 = getPanelLabel() + " " + FOCUS_AVERAGE;
+	    String propertyName2 = getPanelLabel() + " " + FOCUS_EXPOSURE;
 	    if (propertyName.equals(propertyName1)) {
+		    studio.logs().logMessage("name: " + propertyName);
 	        if (EmuUtils.isNumeric(newvalue)) {
 	            average = (int) Double.parseDouble(newvalue);
 	            studio.logs().logMessage("Updated average to: " + average);
