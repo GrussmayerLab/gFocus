@@ -152,6 +152,16 @@ public class LockPanel extends ConfigurablePanel {
 
 	    // Lock focus
 	    SwingUIListeners.addActionListenerToBooleanAction(b -> focusLocking(b), btnLock);
+	    
+	    spinner_1.addChangeListener(e -> {
+	    	average = (int) spinner_1.getValue();
+	    	studio.logs().logMessage("Updated average to: " + average);
+	    });
+	    
+	    spinner.addChangeListener(e -> {
+	    	exposure = (float) spinner.getValue();
+	    	studio.logs().logMessage("Updated average to: " + average);
+	    });
 	}
 
 
