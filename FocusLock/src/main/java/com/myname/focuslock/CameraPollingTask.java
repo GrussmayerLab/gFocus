@@ -34,6 +34,24 @@ public class CameraPollingTask {
         }
     }
     
+    public void setExposure(double exposure) {
+        try {
+            privateCore.setProperty(cameraName, "Exposure", exposure);
+            studio.logs().logMessage("Set exposure to: " + exposure);
+        } catch (Exception e) {
+            studio.logs().showError("Failed to set exposure: " + e.getMessage());
+        }
+    }
+
+    public void setAverage(int average) {
+        try {
+            privateCore.setProperty(cameraName, "Averaging", average);
+            studio.logs().logMessage("Set averaging to: " + average);
+        } catch (Exception e) {
+            studio.logs().showError("Failed to set averaging: " + e.getMessage());
+        }
+    }
+    
     public void setOnImageUpdate(Consumer<short[]> callback) {
         this.onImageUpdate = callback;
     }

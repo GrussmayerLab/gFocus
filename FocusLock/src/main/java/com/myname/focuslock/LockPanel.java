@@ -203,6 +203,9 @@ public class LockPanel extends ConfigurablePanel {
 	        if (EmuUtils.isNumeric(newvalue)) {
 	            average = (int) Double.parseDouble(newvalue);
 	            System.out.println("Updated average to: " + average);
+	            if (cameraPollingTask != null) {
+	            	cameraPollingTask.setAverage(average);
+	            }
 	        } else {
 	            System.out.println("Invalid numeric value for average: " + newvalue);
 	        }
@@ -210,6 +213,9 @@ public class LockPanel extends ConfigurablePanel {
 	        try {
 	            exposure = (float) Double.parseDouble(newvalue);
 	            System.out.println("Updated exposure to: " + exposure);
+	            if (cameraPollingTask != null) {
+	            	cameraPollingTask.setExposure(exposure);
+	            }
 	        } catch (NumberFormatException e) {
 	            System.out.println("Invalid numeric value for exposure: " + newvalue);
 	        }
