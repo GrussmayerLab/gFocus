@@ -75,10 +75,20 @@ public class GraphPanel extends ConfigurablePanel {
             shortValues[i] = (short) intensityValues[i];  // explicit cast, beware of overflow!
         }
 
-        double[] params = new GaussianFitter(shortValues).fit();
-        double a = params[0];
-        double mu = params[1];
-        double sigma = params[2];
+        double a = 0;
+        double mu = 0;
+        double sigma = 0;
+
+        try {
+            double[] params = new GaussianFitter(shortValues).fit();
+            a = params[0];
+            mu = params[1];
+            sigma = params[2];
+        } catch (Exception e) {
+        	System.out.println("Gaussian fitting failed: " + e.getMessage());
+            // You could log the stack trace if needed
+            e.printStackTrace();
+        }
 
         for (int x = 1; x <= 128; x++) {
             double y = a * Math.exp(-Math.pow(x - mu, 2) / (2 * sigma * sigma));
