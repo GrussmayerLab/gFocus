@@ -40,7 +40,7 @@ public class CameraPollingTask {
                 privateCore.setCameraDevice(cameraName);
                 isCameraAttached = true;
             } catch (Exception e) {
-                System.out.println("Failed to attach camera: " + e.getMessage());
+            	studio.logs().logMessage("Failed to attach camera: " + e.getMessage());
             }
         }
     }
@@ -51,7 +51,7 @@ public class CameraPollingTask {
                 privateCore.setCameraDevice("");  // Detach by setting to empty string
                 isCameraAttached = false;
             } catch (Exception e) {
-                System.out.println("Failed to detach camera: " + e.getMessage());
+            	studio.logs().logMessage("Failed to detach camera: " + e.getMessage());
             }
         }
     }

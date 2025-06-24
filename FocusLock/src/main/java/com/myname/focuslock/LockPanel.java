@@ -199,7 +199,7 @@ public class LockPanel extends ConfigurablePanel {
 	protected void propertyhasChanged(String propertyName, String newvalue) {
 	    String propertyName1 = getPanelLabel() + " " + FOCUS_AVERAGE;
 	    String propertyName2 = getPanelLabel() + " " + FOCUS_EXPOSURE;
-
+	    studio.logs().logMessage("name: " + propertyName);
 	    if (propertyName.equals(propertyName1)) {
 	        if (EmuUtils.isNumeric(newvalue)) {
 	            average = (int) Double.parseDouble(newvalue);
