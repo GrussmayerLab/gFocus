@@ -13,7 +13,7 @@ import java.util.function.Consumer;
  */
 public class CameraPollingTask {
     private final Studio studio;
-    private final CMMCore core;
+    private final CMMCore privateCore ;
     
     private final String cameraName = "gFocus Light Sensor";
     private final ScheduledExecutorService scheduler = Executors.newSingleThreadScheduledExecutor();    
@@ -22,7 +22,15 @@ public class CameraPollingTask {
 
     public CameraPollingTask(Studio studio) {
         this.studio = studio;
-        this.core = studio.core();
+        this.privateCore  = new CMMCore();
+        
+        try {
+        	privateCore.loadSystemConfiguration("C:/Program Files/Micro-Manager-2.0/gFocus/gFocus.cfg");
+            privateCore.setCameraDevice(cameraName);
+        } catch (Exception e) {
+            studio.logs().showError("Failed to initialize private core for light sensor: " + e.getMessage());
+            e.printStackTrace();
+        }
     }
     
     public void setOnImageUpdate(Consumer<short[]> callback) {
@@ -30,21 +38,12 @@ public class CameraPollingTask {
     }
 
     public void start() {
-        try {
-            core.setCameraDevice(cameraName);
-            core.snapImage();
-            core.getImage(); 
-        } catch (Exception e) {
-            studio.logs().logMessage("First snap failed (warm-up): " + e.getMessage());
-        }
-
         scheduler.scheduleWithFixedDelay(() -> {
             final int maxRetries = 10;
             for (int attempt = 1; attempt <= maxRetries; attempt++) {
                 try {
-                    core.setCameraDevice(cameraName);
-                    core.snapImage();
-                    Object img = core.getImage();
+                    privateCore.snapImage();
+                    Object img = privateCore.getImage();
 
                     if (img instanceof byte[]) {
                         byte[] raw = (byte[]) img;
@@ -95,9 +94,8 @@ public class CameraPollingTask {
 
         for (int attempt = 1; attempt <= maxRetries; attempt++) {
             try {
-                core.setCameraDevice(cameraName);
-                core.snapImage();
-                Object img = core.getImage();
+            	privateCore.snapImage();
+                Object img = privateCore.getImage();
 
                 if (img instanceof byte[]) {
                     byte[] raw = (byte[]) img;
