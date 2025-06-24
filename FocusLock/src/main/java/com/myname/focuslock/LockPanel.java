@@ -46,7 +46,7 @@ public class LockPanel extends ConfigurablePanel {
 	public final String FOCUS_EXPOSURE = "exposure";
 	
 	// settings
-	private float exposure;
+	private double exposure;
 	private int average;
 	private double slopeCal;
 	private SystemController systemController_;
@@ -156,11 +156,17 @@ public class LockPanel extends ConfigurablePanel {
 	    spinner_1.addChangeListener(e -> {
 	    	average = (int) spinner_1.getValue();
 	    	studio.logs().logMessage("Updated average to: " + average);
+            if (cameraPollingTask != null) {
+            	cameraPollingTask.setAverage(average);
+            }
 	    });
 	    
 	    spinner.addChangeListener(e -> {
-	    	exposure = (float) spinner.getValue();
+	    	exposure = (double) spinner.getValue();
 	    	studio.logs().logMessage("Updated average to: " + average);
+            if (cameraPollingTask != null) {
+            	cameraPollingTask.setExposure(exposure);
+            }
 	    });
 	}
 
