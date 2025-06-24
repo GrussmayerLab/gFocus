@@ -197,8 +197,8 @@ public class LockPanel extends ConfigurablePanel {
 
 	@Override
 	protected void propertyhasChanged(String propertyName, String newvalue) {
-	    String propertyName1 = getPanelLabel() + " " + FOCUS_AVERAGE;
-	    String propertyName2 = getPanelLabel() + " " + FOCUS_EXPOSURE;
+	    String propertyName1 = "settings average";
+	    String propertyName2 = "settings exposure";
 	    studio.logs().logMessage("name: " + propertyName);
 	    if (propertyName.equals(propertyName1)) {
 	        if (EmuUtils.isNumeric(newvalue)) {
