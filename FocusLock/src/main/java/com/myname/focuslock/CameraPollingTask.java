@@ -27,6 +27,7 @@ public class CameraPollingTask {
         try {
         	privateCore.loadSystemConfiguration("C:/Program Files/Micro-Manager-2.0/gFocus/gFocus.cfg");
             privateCore.setCameraDevice(cameraName);
+            studio.logs().showError("Initializez private core for light sensor.");
         } catch (Exception e) {
             studio.logs().showError("Failed to initialize private core for light sensor: " + e.getMessage());
             e.printStackTrace();
