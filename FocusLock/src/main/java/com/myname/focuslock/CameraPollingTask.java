@@ -19,6 +19,7 @@ public class CameraPollingTask {
     private final ScheduledExecutorService scheduler = Executors.newSingleThreadScheduledExecutor();    
     public volatile short[] pixelData;
     private Consumer<short[]> onImageUpdate;
+    private boolean isCameraAttached = false;
 
     public CameraPollingTask(Studio studio) {
         this.studio = studio;
@@ -26,11 +27,32 @@ public class CameraPollingTask {
         
         try {
         	privateCore.loadSystemConfiguration("C:/Program Files/Micro-Manager-2.0/gFocus/gFocus.cfg");
-            privateCore.setCameraDevice(cameraName);
             studio.logs().logMessage("Private core for light sensor initialized");
         } catch (Exception e) {
             studio.logs().showError("Failed to initialize private core for light sensor: " + e.getMessage());
             e.printStackTrace();
+        }
+    }
+    
+    private void attachCamera() {
+        if (!isCameraAttached) {
+            try {
+                privateCore.setCameraDevice(cameraName);
+                isCameraAttached = true;
+            } catch (Exception e) {
+                System.out.println("Failed to attach camera: " + e.getMessage());
+            }
+        }
+    }
+
+    private void detachCamera() {
+        if (isCameraAttached) {
+            try {
+                privateCore.setCameraDevice("");  // Detach by setting to empty string
+                isCameraAttached = false;
+            } catch (Exception e) {
+                System.out.println("Failed to detach camera: " + e.getMessage());
+            }
         }
     }
     
@@ -61,9 +83,11 @@ public class CameraPollingTask {
             final int maxRetries = 10;
             for (int attempt = 1; attempt <= maxRetries; attempt++) {
                 try {
+                	attachCamera();
                     privateCore.snapImage();
                     Object img = privateCore.getImage();
-
+                    detachCamera();
+                    
                     if (img instanceof byte[]) {
                         byte[] raw = (byte[]) img;
                         int numPixels = raw.length / 2;
@@ -113,9 +137,11 @@ public class CameraPollingTask {
 
         for (int attempt = 1; attempt <= maxRetries; attempt++) {
             try {
+            	attachCamera(); // <- Attach before using
             	privateCore.snapImage();
                 Object img = privateCore.getImage();
-
+                detachCamera(); // <- Detach after using
+                
                 if (img instanceof byte[]) {
                     byte[] raw = (byte[]) img;
                     int numPixels = raw.length / 2;
