@@ -57,8 +57,6 @@ public class LockPanel extends ConfigurablePanel {
 		
 		systemController_ = systemController;
 		studio  = systemController_.getStudio();
-        cameraPollingTask = new CameraPollingTask(systemController_.getStudio()); // studio must be set externally
-
 		JLabel lblNewLabel = new JLabel("Average");
 		lblNewLabel.setFont(new Font("Tahoma", Font.PLAIN, 12));
 		lblNewLabel.setBounds(22, 50, 45, 13);
@@ -206,7 +204,9 @@ public class LockPanel extends ConfigurablePanel {
 	        if (EmuUtils.isNumeric(newvalue)) {
 	            average = (int) Double.parseDouble(newvalue);
 	            studio.logs().logMessage("Updated average to: " + average);
-            	cameraPollingTask.setAverage(average);
+	            if (cameraPollingTask != null) {
+	            	cameraPollingTask.setAverage(average);
+	            }
 	        } else {
 	        	studio.logs().logMessage("Invalid numeric value for average: " + newvalue);
 	        }
@@ -214,7 +214,9 @@ public class LockPanel extends ConfigurablePanel {
 	        try {
 	            exposure = (float) Double.parseDouble(newvalue);
 	            studio.logs().logMessage("Updated exposure to: " + exposure);
-	            cameraPollingTask.setExposure(exposure);
+	            if (cameraPollingTask != null) {
+	            	cameraPollingTask.setExposure(exposure);
+	            }
 	        } catch (NumberFormatException e) {
 	        	studio.logs().logMessage("Invalid numeric value for exposure: " + newvalue);
 	        }
@@ -230,13 +232,20 @@ public class LockPanel extends ConfigurablePanel {
 	
 	protected void monitorPosition(boolean enabled) {
 	    if (enabled) {
-            if (pixelDataListener != null) {
-                cameraPollingTask.setOnImageUpdate(pixelDataListener);
-            }
+	        if (cameraPollingTask == null) {
+	            System.out.println("Studio is: " + (systemController_ != null ? "NOT null" : "NULL"));
+	            cameraPollingTask = new CameraPollingTask(systemController_.getStudio()); // studio must be set externally
+	            if (pixelDataListener != null) {
+	                cameraPollingTask.setOnImageUpdate(pixelDataListener);
+	            }
+	        }
 	        cameraPollingTask.start();
 	        lblStatus.setText("Camera Polling...");
 	    } else {
-            cameraPollingTask.stop();
+	        if (cameraPollingTask != null) {
+	            cameraPollingTask.stop();
+	            cameraPollingTask = null;
+	        }
 	        lblStatus.setText("Camera Stopped");
 	    }
 	}
