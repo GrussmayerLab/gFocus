@@ -24,6 +24,7 @@ import javax.swing.JToggleButton;
 import javax.swing.JSpinner;
 import javax.swing.SpinnerNumberModel;
 import java.util.function.Consumer; // Add this at the top
+import org.micromanager.Studio;
 
 public class LockPanel extends ConfigurablePanel {
 	/**
@@ -49,13 +50,15 @@ public class LockPanel extends ConfigurablePanel {
 	private int average;
 	private double slopeCal;
 	private SystemController systemController_;
-	
+	private Studio studio;
 	public LockPanel(String label, SystemController systemController) {
 		super(label);
 		setLayout(null);
 		
 		systemController_ = systemController;
-		
+		studio  = systemController_.getStudio();
+        cameraPollingTask = new CameraPollingTask(systemController_.getStudio()); // studio must be set externally
+
 		JLabel lblNewLabel = new JLabel("Average");
 		lblNewLabel.setFont(new Font("Tahoma", Font.PLAIN, 12));
 		lblNewLabel.setBounds(22, 50, 45, 13);
@@ -202,22 +205,18 @@ public class LockPanel extends ConfigurablePanel {
 	    if (propertyName.equals(propertyName1)) {
 	        if (EmuUtils.isNumeric(newvalue)) {
 	            average = (int) Double.parseDouble(newvalue);
-	            System.out.println("Updated average to: " + average);
-	            if (cameraPollingTask != null) {
-	            	cameraPollingTask.setAverage(average);
-	            }
+	            studio.logs().logMessage("Updated average to: " + average);
+            	cameraPollingTask.setAverage(average);
 	        } else {
-	            System.out.println("Invalid numeric value for average: " + newvalue);
+	        	studio.logs().logMessage("Invalid numeric value for average: " + newvalue);
 	        }
 	    } else if (propertyName.equals(propertyName2)) {
 	        try {
 	            exposure = (float) Double.parseDouble(newvalue);
-	            System.out.println("Updated exposure to: " + exposure);
-	            if (cameraPollingTask != null) {
-	            	cameraPollingTask.setExposure(exposure);
-	            }
+	            studio.logs().logMessage("Updated exposure to: " + exposure);
+	            cameraPollingTask.setExposure(exposure);
 	        } catch (NumberFormatException e) {
-	            System.out.println("Invalid numeric value for exposure: " + newvalue);
+	        	studio.logs().logMessage("Invalid numeric value for exposure: " + newvalue);
 	        }
 	    }
 	}
@@ -231,20 +230,13 @@ public class LockPanel extends ConfigurablePanel {
 	
 	protected void monitorPosition(boolean enabled) {
 	    if (enabled) {
-	        if (cameraPollingTask == null) {
-	            System.out.println("Studio is: " + (systemController_ != null ? "NOT null" : "NULL"));
-	            cameraPollingTask = new CameraPollingTask(systemController_.getStudio()); // studio must be set externally
-	            if (pixelDataListener != null) {
-	                cameraPollingTask.setOnImageUpdate(pixelDataListener);
-	            }
-	        }
+            if (pixelDataListener != null) {
+                cameraPollingTask.setOnImageUpdate(pixelDataListener);
+            }
 	        cameraPollingTask.start();
 	        lblStatus.setText("Camera Polling...");
 	    } else {
-	        if (cameraPollingTask != null) {
-	            cameraPollingTask.stop();
-	            cameraPollingTask = null;
-	        }
+            cameraPollingTask.stop();
 	        lblStatus.setText("Camera Stopped");
 	    }
 	}
