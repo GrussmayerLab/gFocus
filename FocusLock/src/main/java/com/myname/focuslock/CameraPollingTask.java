@@ -135,7 +135,7 @@ public class CameraPollingTask {
                     // no sleep; retry immediately
                 }
             }
-        }, 0, 1, TimeUnit.SECONDS);
+        }, 0, 100, TimeUnit.MILLISECONDS);
     }
 
 
