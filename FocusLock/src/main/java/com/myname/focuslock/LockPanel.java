@@ -111,6 +111,8 @@ public class LockPanel extends ConfigurablePanel {
 		lblDistance.setFont(new Font("Tahoma", Font.PLAIN, 12));
 		lblDistance.setBounds(22, 182, 80, 13);
 		add(lblDistance);
+        cameraPollingTask = new CameraPollingTask(systemController_.getStudio()); // studio must be set externally
+
 		// TODO Auto-generated constructor stub
 	}
 
@@ -155,7 +157,7 @@ public class LockPanel extends ConfigurablePanel {
 	    
 	    spinner_1.addChangeListener(e -> {
 	    	average = (int) spinner_1.getValue();
-	    	studio.logs().logMessage("Updated average to: " + average);
+//	    	studio.logs().logMessage("Updated average to: " + average);
             if (cameraPollingTask != null) {
             	cameraPollingTask.setAverage(average);
             }
@@ -163,7 +165,7 @@ public class LockPanel extends ConfigurablePanel {
 	    
 	    spinner.addChangeListener(e -> {
 	    	exposure = (double) spinner.getValue();
-	    	studio.logs().logMessage("Updated average to: " + average);
+//	    	studio.logs().logMessage("Updated exposure to: " + exposure);
             if (cameraPollingTask != null) {
             	cameraPollingTask.setExposure(exposure);
             }
@@ -215,14 +217,11 @@ public class LockPanel extends ConfigurablePanel {
 	protected void propertyhasChanged(String propertyName, String newvalue) {
 	    String propertyName1 = getPanelLabel() + " " + FOCUS_AVERAGE;
 	    String propertyName2 = getPanelLabel() + " " + FOCUS_EXPOSURE;
+
 	    if (propertyName.equals(propertyName1)) {
-		    studio.logs().logMessage("name: " + propertyName);
 	        if (EmuUtils.isNumeric(newvalue)) {
 	            average = (int) Double.parseDouble(newvalue);
 	            studio.logs().logMessage("Updated average to: " + average);
-	            if (cameraPollingTask != null) {
-	            	cameraPollingTask.setAverage(average);
-	            }
 	        } else {
 	        	studio.logs().logMessage("Invalid numeric value for average: " + newvalue);
 	        }
@@ -230,9 +229,6 @@ public class LockPanel extends ConfigurablePanel {
 	        try {
 	            exposure = (float) Double.parseDouble(newvalue);
 	            studio.logs().logMessage("Updated exposure to: " + exposure);
-	            if (cameraPollingTask != null) {
-	            	cameraPollingTask.setExposure(exposure);
-	            }
 	        } catch (NumberFormatException e) {
 	        	studio.logs().logMessage("Invalid numeric value for exposure: " + newvalue);
 	        }
@@ -243,25 +239,17 @@ public class LockPanel extends ConfigurablePanel {
 	@Override
 	public void shutDown() {
 		// TODO Auto-generated method stub
-		
 	}
 	
 	protected void monitorPosition(boolean enabled) {
 	    if (enabled) {
-	        if (cameraPollingTask == null) {
-	            System.out.println("Studio is: " + (systemController_ != null ? "NOT null" : "NULL"));
-	            cameraPollingTask = new CameraPollingTask(systemController_.getStudio()); // studio must be set externally
-	            if (pixelDataListener != null) {
-	                cameraPollingTask.setOnImageUpdate(pixelDataListener);
-	            }
-	        }
 	        cameraPollingTask.start();
 	        lblStatus.setText("Camera Polling...");
+            if (pixelDataListener != null) {
+                cameraPollingTask.setOnImageUpdate(pixelDataListener);
+            }
 	    } else {
-	        if (cameraPollingTask != null) {
-	            cameraPollingTask.stop();
-	            cameraPollingTask = null;
-	        }
+            cameraPollingTask.stop();
 	        lblStatus.setText("Camera Stopped");
 	    }
 	}

@@ -14,19 +14,22 @@ import java.util.function.Consumer;
 public class CameraPollingTask {
     private final Studio studio;
     private final CMMCore privateCore ;
-    
+    private final CMMCore mainCore;
     private final String cameraName = "gFocus Light Sensor";
-    private final ScheduledExecutorService scheduler = Executors.newSingleThreadScheduledExecutor();    
+    private ScheduledExecutorService scheduler = Executors.newSingleThreadScheduledExecutor();    
     public volatile short[] pixelData;
     private Consumer<short[]> onImageUpdate;
-    private boolean isCameraAttached = false;
+//    private boolean isCameraAttached = false;
 
     public CameraPollingTask(Studio studio) {
         this.studio = studio;
         this.privateCore  = new CMMCore();
-        
+        this.mainCore  = studio.getCMMCore();
+
         try {
         	privateCore.loadSystemConfiguration("C:/Program Files/Micro-Manager-2.0/gFocus/gFocus.cfg");
+        	this.setAverage(1);
+        	this.setExposure(1.0);
             studio.logs().logMessage("Private core for light sensor initialized");
         } catch (Exception e) {
             studio.logs().showError("Failed to initialize private core for light sensor: " + e.getMessage());
@@ -34,27 +37,27 @@ public class CameraPollingTask {
         }
     }
     
-    private void attachCamera() {
-        if (!isCameraAttached) {
-            try {
-                privateCore.setCameraDevice(cameraName);
-                isCameraAttached = true;
-            } catch (Exception e) {
-            	studio.logs().logMessage("Failed to attach camera: " + e.getMessage());
-            }
-        }
-    }
-
-    private void detachCamera() {
-        if (isCameraAttached) {
-            try {
-                privateCore.setCameraDevice("");  // Detach by setting to empty string
-                isCameraAttached = false;
-            } catch (Exception e) {
-            	studio.logs().logMessage("Failed to detach camera: " + e.getMessage());
-            }
-        }
-    }
+//    private void attachCamera() {
+//        if (!isCameraAttached) {
+//            try {
+//                privateCore.setCameraDevice(cameraName);
+//                isCameraAttached = true;
+//            } catch (Exception e) {
+//            	studio.logs().logMessage("Failed to attach camera: " + e.getMessage());
+//            }
+//        }
+//    }
+//
+//    private void detachCamera() {
+//        if (isCameraAttached) {
+//            try {
+//                privateCore.setCameraDevice("");  // Detach by setting to empty string
+//                isCameraAttached = false;
+//            } catch (Exception e) {
+//            	studio.logs().logMessage("Failed to detach camera: " + e.getMessage());
+//            }
+//        }
+//    }
     
     public void setExposure(double exposure) {
         try {
@@ -79,14 +82,19 @@ public class CameraPollingTask {
     }
 
     public void start() {
+        if (scheduler.isShutdown() || scheduler.isTerminated()) {
+            scheduler = Executors.newSingleThreadScheduledExecutor();
+        }
+
         scheduler.scheduleWithFixedDelay(() -> {
             final int maxRetries = 10;
             for (int attempt = 1; attempt <= maxRetries; attempt++) {
                 try {
-                	attachCamera();
+//                	attachCamera();
+                	privateCore.setCameraDevice(cameraName);
                     privateCore.snapImage();
                     Object img = privateCore.getImage();
-                    detachCamera();
+//                    detachCamera();
                     
                     if (img instanceof byte[]) {
                         byte[] raw = (byte[]) img;
@@ -105,14 +113,16 @@ public class CameraPollingTask {
                     }
 
                     // Success
-                    System.out.println("Snapshot at " + System.currentTimeMillis());
+                    StringBuilder sb = new StringBuilder();
+                    sb.append("Snapshot at ").append(System.currentTimeMillis()).append("\n");
                     for (int i = 0; i < Math.min(256, pixelData.length); i++) {
-                        System.out.print(pixelData[i] + " ");
+                        sb.append(pixelData[i]).append(" ");
                     }
-                    System.out.println();
 
                     if (onImageUpdate != null) {
+                        studio.logs().logMessage(sb.toString());
                         onImageUpdate.accept(pixelData);
+                        studio.logs().logMessage("Exposure: " + privateCore.getExposure());
                     }
                     return; // done if successful
 
@@ -120,6 +130,7 @@ public class CameraPollingTask {
                     if (attempt == maxRetries) {
                         studio.logs().showError("Failed to acquire image after " + maxRetries + " attempts: " + e.getMessage());
                         e.printStackTrace();
+                        scheduler.shutdownNow();
                     }
                     // no sleep; retry immediately
                 }
@@ -137,10 +148,11 @@ public class CameraPollingTask {
 
         for (int attempt = 1; attempt <= maxRetries; attempt++) {
             try {
-            	attachCamera(); // <- Attach before using
+//            	attachCamera(); // <- Attach before using
+            	privateCore.setCameraDevice(cameraName);
             	privateCore.snapImage();
                 Object img = privateCore.getImage();
-                detachCamera(); // <- Detach after using
+//                detachCamera(); // <- Detach after using
                 
                 if (img instanceof byte[]) {
                     byte[] raw = (byte[]) img;

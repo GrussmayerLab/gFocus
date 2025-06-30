@@ -84,7 +84,7 @@ void setup() {
     Serial.begin(115200);
     pinMode(S_CLK, OUTPUT);
     pinMode(S_DIN, OUTPUT);
-    analogReadResolution(12); // Set to 12 bits
+    // analogReadResolution(12); // Set to 12 bits
     initializeLightSensor();
 }
 
