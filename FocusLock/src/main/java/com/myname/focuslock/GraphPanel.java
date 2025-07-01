@@ -1,14 +1,16 @@
 package com.myname.focuslock;
 
+import java.awt.BasicStroke;
 import java.awt.BorderLayout;
 import javax.swing.JFrame;
-
+import java.awt.Color;
 import org.jfree.chart.ChartFactory;
 import org.jfree.chart.ChartPanel;
 import org.jfree.chart.JFreeChart;
 import org.jfree.chart.axis.NumberAxis;
 import org.jfree.chart.plot.PlotOrientation;
 import org.jfree.chart.plot.XYPlot;
+import org.jfree.chart.renderer.xy.XYLineAndShapeRenderer;
 import org.jfree.data.xy.XYSeries;
 import org.jfree.data.xy.XYSeriesCollection;
 
@@ -23,14 +25,15 @@ public class GraphPanel extends ConfigurablePanel {
     private XYSeries referenceSeries;
 
     public GraphPanel(int[] intensityValues, double[] referenceValues) {
-        super("GraphPanal");
+        super("GraphPanel");
 
         setLayout(new BorderLayout());
+        setBackground(Color.DARK_GRAY);  // Panel background
 
         rawSeries = new XYSeries("Raw Data");
         fittedSeries = new XYSeries("Fitted Gaussian");
         referenceSeries = new XYSeries("Reference Gaussian");
-        
+
         XYSeriesCollection dataset = new XYSeriesCollection();
         dataset.addSeries(rawSeries);
         dataset.addSeries(fittedSeries);
@@ -48,10 +51,34 @@ public class GraphPanel extends ConfigurablePanel {
         );
 
         XYPlot plot = chart.getXYPlot();
+
+        // Dark mode styling
+        chart.setBackgroundPaint(Color.DARK_GRAY);                       // Outside chart area
+        plot.setBackgroundPaint(new Color(30, 30, 30));                  // Inside plot area
+        plot.setDomainGridlinePaint(Color.GRAY);
+        plot.setRangeGridlinePaint(Color.GRAY);
+
+        // Axis styling
+        NumberAxis xAxis = (NumberAxis) plot.getDomainAxis();
         NumberAxis yAxis = (NumberAxis) plot.getRangeAxis();
         yAxis.setRange(0.0, 4095.0);
+        xAxis.setLabelPaint(Color.WHITE);
+        yAxis.setLabelPaint(Color.WHITE);
+        xAxis.setTickLabelPaint(Color.WHITE);
+        yAxis.setTickLabelPaint(Color.WHITE);
+
+        // Renderer styling
+//        XYLineAndShapeRenderer renderer = new XYLineAndShapeRenderer();
+//        renderer.setSeriesPaint(0, Color.CYAN);      // Raw Data
+//        renderer.setSeriesPaint(1, Color.GREEN);     // Fitted Gaussian
+//        renderer.setSeriesPaint(2, Color.ORANGE);    // Reference Gaussian
+//        renderer.setSeriesStroke(0, new BasicStroke(0.1f));
+//        renderer.setSeriesStroke(1, new BasicStroke(0.1f));
+//        renderer.setSeriesStroke(2, new BasicStroke(0.1f));
+//        plot.setRenderer(renderer);
 
         ChartPanel chartPanel = new ChartPanel(chart);
+        chartPanel.setBackground(Color.DARK_GRAY);
         add(chartPanel, BorderLayout.CENTER);
 
         // Initial population

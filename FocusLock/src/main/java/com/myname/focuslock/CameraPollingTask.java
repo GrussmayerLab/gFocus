@@ -117,16 +117,15 @@ public class CameraPollingTask {
                     }
 
                     // Success
-                    StringBuilder sb = new StringBuilder();
-                    sb.append("Snapshot at ").append(System.currentTimeMillis()).append("\n");
-                    for (int i = 0; i < Math.min(256, pixelData.length); i++) {
-                        sb.append(pixelData[i]).append(" ");
-                    }
+//                    StringBuilder sb = new StringBuilder();
+//                    sb.append("Snapshot at ").append(System.currentTimeMillis()).append("\n");
+//                    for (int i = 0; i < Math.min(256, pixelData.length); i++) {
+//                        sb.append(pixelData[i]).append(" ");
+//                    }
 
                     if (onImageUpdate != null) {
-                        studio.logs().logMessage(sb.toString());
+//                        studio.logs().logMessage(sb.toString());
                         onImageUpdate.accept(pixelData);
-                        studio.logs().logMessage("Exposure: " + privateCore.getExposure());
                     }
                     return; // done if successful
 
@@ -137,6 +136,7 @@ public class CameraPollingTask {
                         	privateCore.loadSystemConfiguration("C:/Program Files/Micro-Manager-2.0/gFocus/gFocus.cfg");
                         	this.setAverage(average);
                         	this.setExposure(exposure);
+                        	studio.logs().logMessage("Max retries: " + e.toString());
                         	attempt = 0;
                     	} catch(Exception e1) {
                     		studio.logs().logMessage("reset: " + e1.toString());
