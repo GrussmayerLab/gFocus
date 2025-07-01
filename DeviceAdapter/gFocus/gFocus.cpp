@@ -61,7 +61,7 @@ gFocus::gFocus() :
 
 	CPropertyAction* pAct = new CPropertyAction(this, &gFocus::OnPort);
 	CreateProperty(MM::g_Keyword_Port, "Undefined", MM::String, false, pAct, true);
-	settings_.avarage = 0;
+	settings_.avarage = 1;
 	settings_.exposure = 1.0;
 	img_ = ImgBuffer(imageWidth_, imageHeight_, 2);
 }
@@ -383,7 +383,7 @@ int gFocus::Initialize()
 	int nRet = CreateIntegerProperty(MM::g_Keyword_Binning, 1, false, pAct);
 
 	CPropertyAction* pActA = new CPropertyAction(this, &gFocus::OnExposure);
-	nRet = CreateProperty("Time [ms]", "0.0", MM::Float, false, pActA);
+	nRet = CreateProperty("Time [ms]", "1.0", MM::Float, false, pActA);
 
 	CPropertyAction* pActB = new CPropertyAction(this, &gFocus::OnAverage);
 	nRet = CreateProperty("Average #", "1", MM::Integer, false, pActB);
@@ -433,6 +433,7 @@ int gFocus::OnExposure(MM::PropertyBase* pProp, MM::ActionType eAct)
 	}
 	else if (eAct == MM::AfterSet)
 	{
+
 		double exposure;
 		pProp->Get(exposure);
 		SetExposure(exposure);
@@ -450,9 +451,12 @@ int gFocus::OnAverage(MM::PropertyBase* pProp, MM::ActionType eAct)
 	}
 	else if (eAct == MM::AfterSet)
 	{
+		char buf[100];
 		long average;
 		pProp->Get(average);
 		SetAveraging((int)average);
+		sprintf(buf, "driver average: %d", average);
+		LogMessage(buf);
 		return DEVICE_OK;
 	}
 	return DEVICE_OK;

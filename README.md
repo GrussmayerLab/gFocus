@@ -57,9 +57,10 @@ This project is inspired by similar systems like qgFocus and pgFocus and follows
 
 ## Usage
 
-1. Connect the gFocus system to your PC using a USB-C cable.  
-2. In Micro-Manager, go to **Device > Hardware Configuration Wizard** and create a new config file to only add `gFocus` and save it in `gFocus` folder in the root of Micro-Manager.  
-3. Launch the plugin: **Plugins > User Interface > EMU** — the gFocus control panel will open. Ignore, the warning that it is not configured, `gFocus` runs on a sepperate MMCore instance.
+1. Connect the gFocus system to your PC using a USB-C cable.
+2. Create a folder called `gFocus` in the root of Micro-Manager.  
+2. In Micro-Manager, go to **Device > Hardware Configuration Wizard** and create a new config file to only add `gFocus` and save it in the `gFocus` folder. 
+3. Launch the plugin: **Plugins > User Interface > EMU** — the gFocus control panel will open. Ignore, the warning that it is not configured, `gFocus` runs on a separate MMCore instance.
 
 You should see the following interface:
 
