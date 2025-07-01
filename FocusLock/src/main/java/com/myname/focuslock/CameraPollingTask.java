@@ -20,7 +20,9 @@ public class CameraPollingTask {
     public volatile short[] pixelData;
     private Consumer<short[]> onImageUpdate;
 //    private boolean isCameraAttached = false;
-
+    private int average;
+    private double exposure;
+    
     public CameraPollingTask(Studio studio) {
         this.studio = studio;
         this.privateCore  = new CMMCore();
@@ -59,19 +61,21 @@ public class CameraPollingTask {
 //        }
 //    }
     
-    public void setExposure(double exposure) {
+    public void setExposure(double expo) {
         try {
-            privateCore.setProperty(cameraName, "Time [ms]", exposure);
-            studio.logs().logMessage("Set exposure to: " + exposure);
+            privateCore.setProperty(cameraName, "Time [ms]", expo);
+            studio.logs().logMessage("Set exposure to: " + expo);
+            exposure = expo;
         } catch (Exception e) {
             studio.logs().showError("Failed to set exposure: " + e.getMessage());
         }
     }
 
-    public void setAverage(int average) {
+    public void setAverage(int avg) {
         try {
-            privateCore.setProperty(cameraName, "Average #", average);
-            studio.logs().logMessage("Set averaging to: " + average);
+            privateCore.setProperty(cameraName, "Average #", avg);
+            studio.logs().logMessage("Set averaging to: " + avg);
+            average = avg;
         } catch (Exception e) {
             studio.logs().showError("Failed to set averaging: " + e.getMessage());
         }
@@ -128,9 +132,16 @@ public class CameraPollingTask {
 
                 } catch (Exception e) {
                     if (attempt == maxRetries) {
-                        studio.logs().showError("Failed to acquire image after " + maxRetries + " attempts: " + e.getMessage());
-                        e.printStackTrace();
-                        scheduler.shutdownNow();
+                    	try {
+                            privateCore.reset();
+                        	privateCore.loadSystemConfiguration("C:/Program Files/Micro-Manager-2.0/gFocus/gFocus.cfg");
+                        	this.setAverage(average);
+                        	this.setExposure(exposure);
+                        	attempt = 0;
+                    	} catch(Exception e1) {
+                    		studio.logs().logMessage("reset: " + e1.toString());
+                    	}
+                        
                     }
                     // no sleep; retry immediately
                 }
