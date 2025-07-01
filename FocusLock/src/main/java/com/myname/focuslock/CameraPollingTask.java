@@ -138,7 +138,6 @@ public class CameraPollingTask {
         }, 0, 100, TimeUnit.MILLISECONDS);
     }
 
-
     public void stop() {
         scheduler.shutdownNow();
     }
