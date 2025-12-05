@@ -15,7 +15,7 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="gFocus.h">
+    <ClInclude Include="fgFocus.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="protocol.h">
@@ -23,7 +23,7 @@
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="gFocus.cpp">
+    <ClCompile Include="fgFocus.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="protocol.cpp">

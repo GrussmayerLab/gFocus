@@ -1,6 +1,5 @@
-U7,XIAO-SAMD21-SAMD21
-R6,R7,10k,0805
-R5,1.5k,0805
-C15,100p,0805
-J3,DF11-12DS-2DSA(06)
-J1,FTSH-105-01-F-DV-P-TR
+"Comment","Designator","Footprint","LCSC"
+"1.5"k","R5","Resistor_SMD:R_0805_2012Metric","C4310"
+"100p","C15","Capacitor_SMD:C_0805_2012Metric","C1790"
+
+

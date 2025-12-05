@@ -1,5 +1,5 @@
 ///////////////////////////////////////////////////////////////////////////////
-// FILE:          gFocus.h
+// FILE:          fgFocus.h
 // PROJECT:       Micro-Manager
 // SUBSYSTEM:     DeviceAdapters
 //-----------------------------------------------------------------------------
@@ -11,9 +11,9 @@
 // LICENSE:       Licensed under the Apache License, Version 2.0 (the "License");
 //                you may not use this file except in compliance with the License.
 //                You may obtain a copy of the License at
-//                
+//
 //                http://www.apache.org/licenses/LICENSE-2.0
-//                
+//
 //                Unless required by applicable law or agreed to in writing, software
 //                distributed under the License is distributed on an "AS IS" BASIS,
 //                WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -27,56 +27,55 @@
 #include "DeviceBase.h"
 #include "ImgBuffer.h"
 
-extern const char* cameraName;
+extern const char *cameraName;
 
-
-class gFocus : public CCameraBase<gFocus>
+class fgFocus : public CCameraBase<fgFocus>
 {
 public:
-	gFocus();
-	~gFocus();
+	fgFocus();
+	~fgFocus();
 
 	// Inherited via CCameraBase
 	int Initialize();
 	// property handlers
-	int OnPort(MM::PropertyBase* pPropt, MM::ActionType eAct);
-	int OnVersion(MM::PropertyBase* pPropt, MM::ActionType eAct);
-	int OnExposure(MM::PropertyBase* pProp, MM::ActionType eAct);
-	int OnAverage(MM::PropertyBase* pProp, MM::ActionType eAct);
-	int OnBinning(MM::PropertyBase* pProp, MM::ActionType eAct);
-	int OnPixelType(MM::PropertyBase* pProp, MM::ActionType eAct);
-	int OnBitDepth(MM::PropertyBase* pProp, MM::ActionType eAct);
+	int OnPort(MM::PropertyBase *pPropt, MM::ActionType eAct);
+	int OnVersion(MM::PropertyBase *pPropt, MM::ActionType eAct);
+	int OnExposure(MM::PropertyBase *pProp, MM::ActionType eAct);
+	int OnAverage(MM::PropertyBase *pProp, MM::ActionType eAct);
+	int OnBinning(MM::PropertyBase *pProp, MM::ActionType eAct);
+	int OnPixelType(MM::PropertyBase *pProp, MM::ActionType eAct);
+	int OnBitDepth(MM::PropertyBase *pProp, MM::ActionType eAct);
 
 	int Shutdown();
-	void GetName(char* name) const;
+	void GetName(char *name) const;
 	int SnapImage();
-	const unsigned char* GetImageBuffer();
+	const unsigned char *GetImageBuffer();
 	double GetExposure() const;
 	void SetExposure(double exp_ms);
-	int  GetAveraging() const;
+	int GetAveraging() const;
 	void SetAveraging(int avarage);
 	int SetROI(unsigned x, unsigned y, unsigned xSize, unsigned ySize);
-	int GetROI(unsigned& x, unsigned& y, unsigned& xSize, unsigned& ySize);
+	int GetROI(unsigned &x, unsigned &y, unsigned &xSize, unsigned &ySize);
 	long GetImageBufferSize() const;
 	virtual double GetNominalPixelSizeUm() const;
 	virtual double GetPixelSizeUm() const;
 	int GetBinning() const;
 	int SetBinning(int binSize);
 	int ClearROI();
-	virtual int IsExposureSequenceable(bool& isSequenceable) const;
+	virtual int IsExposureSequenceable(bool &isSequenceable) const;
 	unsigned GetImageWidth() const;
 	unsigned GetImageHeight() const;
 	unsigned GetBitDepth() const;
 	unsigned GetImageBytesPerPixel() const;
-	int WriteToComPortH(const unsigned char* command, unsigned len) { return WriteToComPort(port_.c_str(), command, len); }
-	int ReadFromComPortH(unsigned char* answer, unsigned maxLen, unsigned long& bytesRead)
+	int WriteToComPortH(const unsigned char *command, unsigned len) { return WriteToComPort(port_.c_str(), command, len); }
+	int ReadFromComPortH(unsigned char *answer, unsigned maxLen, unsigned long &bytesRead)
 	{
 		return ReadFromComPort(port_.c_str(), answer, maxLen, bytesRead);
 	}
-	bool ReadExactBytes(const std::string& port, uint8_t* buffer, size_t expectedBytes, unsigned long timeoutMs);
+	bool ReadExactBytes(const std::string &port, uint8_t *buffer, size_t expectedBytes, unsigned long timeoutMs);
 
 private:
-	int GetControllerVersion(int& version);
+	int GetControllerVersion(int &version);
 	bool initialized_;
 	Protocol::SetSettingsCommand settings_;
 	ImgBuffer img_;

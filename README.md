@@ -26,14 +26,24 @@ This project is inspired by similar systems like qgFocus and pgFocus and follows
 
 ### Hardware Setup
 
-1. In the `PCB` folder, you’ll find the **Gerber files** (for manufacturing the board), along with the **schematic** and **PCB design** in the `gFocus` folder. The project is designed using **KiCad**.  
-2. A list of required components can be found in the **BOM (Bill of Materials)**.  
+1. In the `PCB` folder, you’ll find the **Gerber files** (for manufacturing the board), along with the **schematic** and **PCB design** in the `fgFocus` folder. The project is designed using **KiCad**.
+2. With [JLCPCB](https://jlcpcb.com/) you can upload the Gerber.rar file and choose PCB Assembly.
+3. You can then upload the bom.csv and fgFocus-top-pos.csv and finish the order.
+4. Not all components can be assembles and should be ordered and solderd seperatly, those parts can be found in bom_external_components.csv 
 3. The mechanical design is available in the `enclosure` folder.
+
+
+1. The **PCB** directory contains the full **Gerber set** for fabrication, plus the **schematic** and **board layout** inside the `fgFocus` subfolder. The project was created in **KiCad**.
+2. At **JLCPCB**, upload the `Gerber.rar` archive and select **PCB Assembly**.
+3. When prompted, provide the `bom.csv` and `fgFocus-top-pos.csv` files to complete the assembly configuration.
+4. Some parts cannot be machine-assembled and must be sourced and soldered manually. These items are listed in `bom_external_components.csv`.
+5. The **enclosure design** is located in the `enclosure` directory with a `bom.csv` to source the enclosure. 
+6. In the `enclosure` directory you can find a `REAMDE` that explains the assembly of all components.
 
 ### Firmware Setup
 
-1. gFocus uses the [XIAO SAMD21 microcontroller](https://nl.mouser.com/ProductDetail/Seeed-Studio/102010328?qs=GBLSl2AkirtQWO8CTzEK9g%3D%3D&srsltid=AfmBOoqHyFkl2Qpgyily5YNBzPaesjcrrXG1Ro79G8migozdgHgJccld).  
-2. Follow this [getting started tutorial](https://wiki.seeedstudio.com/Seeeduino-XIAO/) to program the board using the `gFocus.ini` file.
+1. fgFocus uses the [XIAO SAMD21 microcontroller](https://nl.mouser.com/ProductDetail/Seeed-Studio/102010328?qs=GBLSl2AkirtQWO8CTzEK9g%3D%3D&srsltid=AfmBOoqHyFkl2Qpgyily5YNBzPaesjcrrXG1Ro79G8migozdgHgJccld).  
+2. Follow this [getting started tutorial](https://wiki.seeedstudio.com/Seeeduino-XIAO/) to program the board using the `fgFocus.ini` file.
 
 ### Software Setup
 
@@ -44,7 +54,7 @@ This project is inspired by similar systems like qgFocus and pgFocus and follows
 2. **Install the EMU Plugin** (for editing or customizing the interface)  
    - Follow the instructions here: [EMU Guide](https://jdeschamps.github.io/EMU-guide/)
 
-3. **Install the gFocus Plugin**  
+3. **Install the fgFocus Plugin**  
    - Copy the `FocusLock.jar` file into the `EMU` folder in your Micro-Manager directory.
 
 4. **Install the Device Adapter**  
@@ -57,14 +67,14 @@ This project is inspired by similar systems like qgFocus and pgFocus and follows
 
 ## Usage
 
-1. Connect the gFocus system to your PC using a USB-C cable.
+1. Connect the fgFocus system to your PC using a USB-C cable.
 2. Create a folder called `fgFocus` in the root of Micro-Manager.  
-2. In Micro-Manager, go to **Device > Hardware Configuration Wizard** and create a new config file to only add `fgFocus` and save it in the `fgFocus` folder. 
+2. In Micro-Manager, go to **Device > Hardware Configuration Wizard** and create a new config file to only add `fgFocus` and save it in the `fgFocus` folder. Make sure you select a baudrate of 115200.
 3. Launch the plugin: **Plugins > User Interface > EMU** — the fgFocus control panel will open. Ignore, the warning that it is not configured, `fgFocus` runs on a separate MMCore instance.
 
 You should see the following interface:
 
-![gFocus](interface.PNG)
+![fgFocus](interface.PNG)
 
 Now you're ready to go!
 

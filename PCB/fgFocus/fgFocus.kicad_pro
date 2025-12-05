@@ -444,7 +444,7 @@
     "pinned_symbol_libs": []
   },
   "meta": {
-    "filename": "gFocus.kicad_pro",
+    "filename": "fgFocus.kicad_pro",
     "version": 1
   },
   "net_settings": {
@@ -506,9 +506,9 @@
       "idf": "",
       "netlist": "",
       "plot": "../gerbers/",
-      "pos_files": "",
+      "pos_files": "C:/Users/Jelle/Documents/TU Delft/gFocus/gFocus/PCB/gerbers/",
       "specctra_dsn": "",
-      "step": "gFocus.step",
+      "step": "fgFocus.step",
       "svg": "",
       "vrml": ""
     },
