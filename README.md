@@ -26,13 +26,6 @@ This project is inspired by similar systems like qgFocus and pgFocus and follows
 
 ### Hardware Setup
 
-1. In the `PCB` folder, you’ll find the **Gerber files** (for manufacturing the board), along with the **schematic** and **PCB design** in the `fgFocus` folder. The project is designed using **KiCad**.
-2. With [JLCPCB](https://jlcpcb.com/) you can upload the Gerber.rar file and choose PCB Assembly.
-3. You can then upload the bom.csv and fgFocus-top-pos.csv and finish the order.
-4. Not all components can be assembles and should be ordered and solderd seperatly, those parts can be found in bom_external_components.csv 
-3. The mechanical design is available in the `enclosure` folder.
-
-
 1. The **PCB** directory contains the full **Gerber set** for fabrication, plus the **schematic** and **board layout** inside the `fgFocus` subfolder. The project was created in **KiCad**.
 2. At **JLCPCB**, upload the `Gerber.rar` archive and select **PCB Assembly**.
 3. When prompted, provide the `bom.csv` and `fgFocus-top-pos.csv` files to complete the assembly configuration.
