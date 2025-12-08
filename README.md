@@ -89,4 +89,4 @@ private final double stepSizeUm = 1;
 
 ## License
 
-This project is licensed under the MIT License. See the `LICENSE` file for details.
+Software in this project is licensed under the MIT License and hardware is licensed under CERN OHL - see `LICENSE file` for details in the licenses folder.
