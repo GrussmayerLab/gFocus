@@ -22,9 +22,6 @@ Estimated cost for this project is around €160.
 5. The system calculates the amount of drift using a Gaussian fit to find the center of the beam.  
 6. A feedback loop adjusts the Z-position of the stage to return the beam to its original position — restoring focus. 
 
-Here’s a clean, sensible **Table of Contents** you can drop directly into your fgFocus README.
-It follows the structure of your document and avoids noise or redundant nesting.
-
 ---
 
 ## Table of Contents
