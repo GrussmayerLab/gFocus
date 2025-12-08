@@ -112,4 +112,4 @@ Contributions are welcome. Whether you're enhancing firmware stability, refining
 
 ## License
 
-Software in this project is licensed under the MIT License and hardware is licensed under CERN OHL - see `LICENSE file` for details in the licenses folder.
+Software in this project is licensed under the MIT License and hardware is licensed under CERN OHL - see `LICENSE` file for details in the licenses folder.
