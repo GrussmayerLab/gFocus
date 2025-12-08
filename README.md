@@ -20,8 +20,29 @@ Estimated cost for this project is around €160.
 3. When the sample moves up or down (axial drift), the reflected beam shifts sideways.  
 4. A light-array sensor detects this lateral shift by measuring the intensity profile of the reflected beam.  
 5. The system calculates the amount of drift using a Gaussian fit to find the center of the beam.  
-6. A feedback loop adjusts the Z-position of the stage to return the beam to its original position — restoring focus.  
+6. A feedback loop adjusts the Z-position of the stage to return the beam to its original position — restoring focus. 
 
+Here’s a clean, sensible **Table of Contents** you can drop directly into your fgFocus README.
+It follows the structure of your document and avoids noise or redundant nesting.
+
+---
+
+## Table of Contents
+
+* [Fairly Good Focus (fgFocus)](#fairly-good-focus-fgfocus)
+
+  * [Key Features](#key-features)
+  * [How It Works](#how-it-works)
+  * [Getting Started](#getting-started)
+    * [Hardware Setup](#hardware-setup)
+    * [Firmware Setup](#firmware-setup)
+    * [Software Setup](#software-setup)
+  * [Usage](#usage)
+  * [Note](#note)
+  * [Contribution](#contribution)
+  * [License](#license)
+
+---
 
 ## Getting Started
 
@@ -87,6 +108,10 @@ To adjust the **number of steps** or the **step size** used in the calibration s
 private final int numSteps = 5;
 private final double stepSizeUm = 1;
 ```
+
+## Contribution
+
+Contributions are welcome. Whether you're enhancing firmware stability, refining hardware design, or extending the MicroManager plugins, focused pull requests with clear explanations help keep the project maintainable. Open an issue if you'd like to discuss a feature or improvement before implementing it.
 
 ## License
 
