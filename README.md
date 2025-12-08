@@ -4,6 +4,7 @@
 
 This project is inspired by similar systems like qgFocus and pgFocus and follows the same naming convention.
 
+Estimated cost for this project is around €160.
 
 ## Key Features
 
